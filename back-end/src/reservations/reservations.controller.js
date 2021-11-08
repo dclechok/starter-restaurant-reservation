@@ -2,7 +2,8 @@
  * List handler for reservation resources
  */
 const asyncErrorBoundary = require('../errors/asyncErrorBoundary');
-const knex = require('../db/connection');
+
+const reservationService = require('./reservations.service');
 
 const DATE_FORMAT = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/; //valid regex formatting for date
 const TIME_FORMAT = /^(0?[1-9]|1[0-2]):[0-5][0-9]$/;  //valid regex formatting for time
@@ -44,16 +45,11 @@ function validateReservation(req, res, next){
 }
 
 async function list(req, res) {
-  // const queryDate = req.query.date;
-  // if(queryDate){
-  //   return knex
-  //     .from('reservations')
-  //     .select('*')
-  //     .where('reservation_date', 'queryDate');
-  // }else
-  return knex
-  .from('reservations')
-  .select('*')
+  const queryDate = req.query.date; //get query date key
+  if(queryDate){
+    const data = await reservationService.list(queryDate);
+    res.json({ data }); //parse data to json format
+  }
 }
 
 async function create(req, res){
@@ -62,6 +58,6 @@ async function create(req, res){
 }
 
 module.exports = {
-  list,
+  list: asyncErrorBoundary(list),
   create: [bodyHasResultProperty, validateReservation, asyncErrorBoundary(create)],
 };
