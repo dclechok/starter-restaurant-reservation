@@ -2,8 +2,8 @@
  * List handler for reservation resources
  */
 const asyncErrorBoundary = require('../errors/asyncErrorBoundary');
-
-const reservationService = require('./reservations.service');
+const knex = require('../db/connection');
+// const reservationService = require('./reservations.service');
 
 const DATE_FORMAT = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/; //valid regex formatting for date
 const TIME_FORMAT = /^(0?[1-9]|1[0-2]):[0-5][0-9]$/;  //valid regex formatting for time
@@ -45,11 +45,17 @@ function validateReservation(req, res, next){
 }
 
 async function list(req, res) {
-  const queryDate = req.query.date; //get query date key
-  if(queryDate){
-    const data = await reservationService.list(queryDate);
-    res.json({ data }); //parse data to json format
-  }
+  const queryDate = req.query.date;
+  console.log(queryDate);
+  const query = knex
+    .from('reservations')
+    .select('*') //list all reservations, unless query with a key parameter is provided
+    .orderByRaw('reservation_time') //earliest reservation time first
+    if(queryDate){ //if query parameter, list reservations that match parameter key
+      query.where('reservation_date', queryDate);
+    }
+    const data = await query;
+    res.json({ data });
 }
 
 async function create(req, res){
