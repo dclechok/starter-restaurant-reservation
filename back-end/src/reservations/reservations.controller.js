@@ -53,11 +53,20 @@ function validateDate(req, res, next){
   //compare incoming reservation date to the current date
   const incomingDate = new Date(reservation_date);
   const currentDate = new Date(buildDate);
-  if(incomingDate < currentDate){
-    return next({
-      status: 400, message: 'Reservations cannot be placed from the future.'
+  if(incomingDate < currentDate) return next({
+      status: 400, message: 'Reservations cannot be placed from the future.',
     });
-  }
+  res.locals.resDate = incomingDate; //store reservation date to be used in next validation
+  next();
+}
+
+function validateNoTuesdayReservation(req, res, next){
+  //we are closed on Tuesday's
+  const resDate = res.locals.resDate;
+  console.log(resDate, resDate.getDay());
+  if(resDate.getDay() === 1) return next({ //0-6 Sun-Sat in documentation, for some reason we are 0-6 Mon-Sun?
+    status: 400, message: 'Sorry, we are closed on Tuesday.',
+  });
   next();
 }
 
@@ -82,5 +91,11 @@ async function create(req, res){
 
 module.exports = {
   list: asyncErrorBoundary(list),
-  create: [bodyHasResultProperty, validateReservation, validateDate, asyncErrorBoundary(create)],
+  create: [
+    bodyHasResultProperty, 
+    validateReservation, 
+    validateDate, 
+    validateNoTuesdayReservation, 
+    asyncErrorBoundary(create)
+  ],
 };
