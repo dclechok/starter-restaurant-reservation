@@ -7,7 +7,7 @@ const knex = require('../db/connection');
 
 const DATE_FORMAT = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/; //valid regex formatting for date
 const TIME_FORMAT = /^(0?[1-9]|1[0-9]|2[0-3]):[0-5][0-9]$/;  //valid regex formatting for time
-//validation middleware
+//VALIDATION MIDDLEWARE
 function bodyHasResultProperty(req, res, next) {
   const { data } = req.body;
   console.log(data);
@@ -22,8 +22,8 @@ function bodyHasResultProperty(req, res, next) {
 
 function validateReservation(req, res, next){
   const { first_name, last_name, mobile_number, reservation_date, reservation_time, people } = req.body.data;
-  //validate each separate piece of body 
-  console.log(first_name);
+  //validate each separate piece of the requests body data
+
   if(!first_name) return next({
     status: 400, message: 'Reservation must include a first_name.'
   });
@@ -45,8 +45,20 @@ function validateReservation(req, res, next){
   next(); //validated onto next middleware
 }
 
-function validateDate(req, res){
+function validateDate(req, res, next){
   const { reservation_date } = req.body.data;
+  //construct todays date as a string
+  const dateToday = new Date();
+  let buildDate = dateToday.getFullYear() + '-' + (dateToday.getMonth() + 1) + '-' + dateToday.getDate();
+  //compare incoming reservation date to the current date
+  const incomingDate = new Date(reservation_date);
+  const currentDate = new Date(buildDate);
+  if(incomingDate < currentDate){
+    return next({
+      status: 400, message: 'Reservations cannot be placed from the future.'
+    });
+  }
+  next();
 }
 
 async function list(req, res) {
