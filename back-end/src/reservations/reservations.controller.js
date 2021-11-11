@@ -63,9 +63,30 @@ function validateDate(req, res, next){
 function validateNoTuesdayReservation(req, res, next){
   //we are closed on Tuesday's
   const resDate = res.locals.resDate;
-  console.log(resDate, resDate.getDay());
   if(resDate.getDay() === 1) return next({ //0-6 Sun-Sat in documentation, for some reason we are 0-6 Mon-Sun?
     status: 400, message: 'Sorry, we are closed on Tuesday.',
+  });
+  next();
+}
+
+function validateTime(req, res, next){
+  //reservation time is an error if:
+  // the res time is before 10:30am
+  // the res time is after 9:30pm
+  // only future reservations are allowed (after current time on day even current day)
+  const { reservation_time: time } = req.body.data;
+  let tooEarly = new Date(), tooLate = new Date(); //our invalid reservation times
+  let attemptedResTime = new Date(); //reservation time to test
+  //build out invalid reservation times
+  tooEarly.setHours(10);
+  tooEarly.setMinutes(30);
+  tooLate.setHours(9);
+  tooLate.setMinutes(30);
+  //build attempted reservation date into date object for comparison
+  attemptedResTime.setHours(time.split('').slice(0, 1).join(''));
+  attemptedResTime.setMinutes(time.split('').slice(3).join(''));
+  if(attemptedResTime.getTime() > tooLate.getTime() || attemptedResTime.getTime() < tooEarly.getTime()) return next({
+    status: 400, message: 'Reservation time not available.',
   });
   next();
 }
@@ -95,7 +116,8 @@ module.exports = {
     bodyHasResultProperty, 
     validateReservation, 
     validateDate, 
-    validateNoTuesdayReservation, 
+    validateNoTuesdayReservation,
+    validateTime, 
     asyncErrorBoundary(create)
   ],
 };
