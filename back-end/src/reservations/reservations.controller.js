@@ -42,8 +42,11 @@ function validateReservation(req, res, next){
   if(!people || typeof people !== 'number') return next({
     status: 400, message: 'Reservation must include a valid number of people',
   });
-  console.log('worked');
   next(); //validated onto next middleware
+}
+
+function validateDate(req, res){
+  const { reservation_date } = req.body.data;
 }
 
 async function list(req, res) {
@@ -61,10 +64,11 @@ async function list(req, res) {
 
 async function create(req, res){
   const result = req.body.data;
-  res.status(201).json({ data: 'hello' });
+  await knex('reservations').insert(result); //insert body data into reservations
+  res.status(201).json({ data: result });
 }
 
 module.exports = {
   list: asyncErrorBoundary(list),
-  create: [bodyHasResultProperty, validateReservation, asyncErrorBoundary(create)],
+  create: [bodyHasResultProperty, validateReservation, validateDate, asyncErrorBoundary(create)],
 };
