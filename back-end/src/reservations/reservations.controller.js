@@ -110,6 +110,12 @@ async function create(req, res){
   res.status(201).json({ data: result });
 }
 
+async function read(req, res){
+  const { reservation_Id } = req.params; //get incoming param
+  const data = await knex.from('reservations').select('*').where('reservation_id', reservation_Id);
+  res.status(200).json({ data });
+}
+
 module.exports = {
   list: asyncErrorBoundary(list),
   create: [
@@ -120,4 +126,5 @@ module.exports = {
     validateTime, 
     asyncErrorBoundary(create)
   ],
+  read: asyncErrorBoundary(read),
 };

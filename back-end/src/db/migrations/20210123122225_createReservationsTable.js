@@ -5,13 +5,13 @@ exports.up = function (knex) {
       table.string('first_name');
       table.string('last_name');
       table.string('mobile_number');
-      table.string('reservation_date');
+      table.string('reservation_date', );
       table.time('reservation_time');
       table.integer('people');
     });
   };
   
   exports.down = function (knex) {
-    return knex.schema.dropTable("reservations");
+    return knex.schema.raw("DROP TABLE reservations CASCADE");
   };
   
