@@ -7,7 +7,8 @@ const knex = require('../db/connection');
 
 const DATE_FORMAT = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/; //valid regex formatting for date
 const TIME_FORMAT = /^(0?[1-9]|1[0-9]|2[0-3]):[0-5][0-9]$/;  //valid regex formatting for time
-//VALIDATION MIDDLEWARE
+
+// START VALIDATION MIDDLEWARE
 function bodyHasResultProperty(req, res, next) {
   const { data } = req.body;
   console.log(data);
@@ -91,6 +92,8 @@ function validateTime(req, res, next){
   next();
 }
 
+/* END VALIDATION MIDDLEWARE */
+
 async function list(req, res) {
   const queryDate = req.query.date;
   const query = knex
@@ -112,8 +115,9 @@ async function create(req, res){
 
 async function read(req, res){
   const { reservation_Id } = req.params; //get incoming param
-  const data = await knex.from('reservations').select('*').where('reservation_id', reservation_Id);
-  res.status(200).json({ data });
+  const data = await knex.from('reservations').select('*').where('reservation_id', reservation_Id).then(records => records[0]);
+  if(data) res.status(200).json({ data });
+  else res.sendStatus(400);
 }
 
 module.exports = {
@@ -126,5 +130,5 @@ module.exports = {
     validateTime, 
     asyncErrorBoundary(create)
   ],
-  read: asyncErrorBoundary(read),
+  read: [asyncErrorBoundary(read)]
 };
