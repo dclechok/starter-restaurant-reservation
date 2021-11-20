@@ -92,6 +92,13 @@ function validateTime(req, res, next){
   next();
 }
 
+async function reservationExists(req, res, next){
+  const { reservation_Id } = req.params;
+  const query = await knex('reservations').select('*').where('reservation_id', reservation_Id).then(queries => queries[0]);
+  if(!query) return next({ status: 404, message: 'Reservation does not exist.'});
+  next();
+}
+
 /* END VALIDATION MIDDLEWARE */
 
 async function list(req, res) {
@@ -120,6 +127,32 @@ async function read(req, res){
   else res.sendStatus(400);
 }
 
+async function update(req, res){ // 
+  const { reservation_Id } = req.params;
+  const { first_name, last_name, mobile_number, reservation_date, reservation_time, people } = req.body.data;
+  const data = await knex('reservations').where('reservation_id', reservation_Id)
+    .update({ //left is table property, right is value from request body 
+      first_name, first_name,
+      last_name, last_name,
+      mobile_number, mobile_number,
+      reservation_date, reservation_date,
+      reservation_time, reservation_time, 
+      people, people
+    }).returning('*').then(reservations => reservations[0]);
+  res.status(200).json({ data });
+}
+
+async function updateStatus(req, res){
+  //update status to cancelled (reservations/:reservation_id/status)
+  const { reservation_Id } = req.params;
+  const { status } = req.body.data;
+  const data = await knex('reservations').where('reservation_id', reservation_Id)
+    .update('status', status)
+    .returning('*')
+    .then(reservations => reservations[0]);
+  res.status(200).json({ data });
+}
+
 module.exports = {
   list: asyncErrorBoundary(list),
   create: [
@@ -130,5 +163,11 @@ module.exports = {
     validateTime, 
     asyncErrorBoundary(create)
   ],
-  read: [asyncErrorBoundary(read)]
+  read: asyncErrorBoundary(read), 
+  update: [
+    asyncErrorBoundary(reservationExists), 
+    validateReservation,
+    asyncErrorBoundary(update)
+  ],
+  updateStatus: [asyncErrorBoundary(updateStatus)]
 };

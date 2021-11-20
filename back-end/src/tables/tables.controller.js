@@ -74,13 +74,13 @@ async function update(req, res){
 
 async function deleteTable(req, res, next){
   const { table_id } = req.params;
-  const query = await knex('tables').select('*').where('table_id', table_id);
-  if(query.length === 0) return next({ status: 404, message: `Table ${table_id} is non-existant.`});
+  const query = await knex('tables').select('*').where('table_id', table_id); //make a query to see if table exists
+  if(query.length === 0) return next({ status: 404, message: `Table ${table_id} is non-existant.`}); //table id exist in Tables?
   const { reservation_id } = query[0];
-  if(!reservation_id) return next({ status: 400, message: `Table ${table_id} is not occupied.`});
+  if(!reservation_id) return next({ status: 400, message: `Table ${table_id} is not occupied.`}); //table is not occupied - no reservation id
   //delete seat aka remove reservation_id
   const data = await knex('tables').where('table_id', table_id).update('reservation_id', null).then(records => records[0]);
-  res.status(200).json({ query });
+  res.status(200).json({ data });
 }
 
 module.exports = {
