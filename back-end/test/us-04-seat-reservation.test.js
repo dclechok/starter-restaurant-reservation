@@ -215,7 +215,6 @@ describe("US-04 - Seat reservation", () => {
 
       test("returns 404 if reservation_id does not exist", async () => {
         expect(tableOne).not.toBeUndefined();
-
         const data = {
           reservation_id: 999,
         };
@@ -231,7 +230,7 @@ describe("US-04 - Seat reservation", () => {
 
       test("returns 200 if table has sufficient capacity", async () => {
         expect(tableOne).not.toBeUndefined();
-
+        console.log(tableOne);
         const response = await request(app)
           .put(`/tables/${tableOne.table_id}/seat`)
           .set("Accept", "application/json")

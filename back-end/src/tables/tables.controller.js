@@ -1,6 +1,8 @@
 const asyncErrorBoundary = require('../errors/asyncErrorBoundary');
 const knex = require('../db/connection');
+const { whereNotExists } = require('../db/connection');
 
+/* BEGIN VALIDATION MIDDLEWARE */
 function bodyHasResultProperty(req, res, next) {
   const { data } = req.body; 
   if (data) { //if body exists - move to validate body
@@ -23,6 +25,36 @@ function validateTableData(req, res, next){
   next(); //move to next middleware
 }
 
+function reservationExists(req, res, next){
+  //check to see if reservation exists
+  const { reservation_id } = req.body.data;
+  if(!reservation_id) return next({ status: 400, message: 'Reservation with this reservation_id does not exist.'});
+  next();
+}
+
+async function reservationInReservations(req, res, next){
+  //does reservation exist in tables' table?
+  const { reservation_id } = req.body.data;
+  const reservation = await knex.from('reservations').where('reservation_id', reservation_id).then(res => res[0]);
+  res.locals.reservation = reservation;
+  if(!reservation) return next({ status: 404, message: `Reservation with the ID of ${reservation_id} does not exist.`}); //the reservation with id doees not exist
+  next();
+}
+
+async function capacityCheck(req, res, next){
+  //check to see if table has sufficient capacity
+  const { table_id } = req.params; // the id of the table to check capacity
+  const { people } = res.locals.reservation; //this will have the amount of people per the reservation
+  const { capacity, reservation_id } = await knex.from('tables').where('table_id', table_id).then(table => table[0]); //fetch specific table's capacity
+  // compare number of people vs number of capacity - if people are below the total capacity, then proceed to allow update, otherwise table is occupied
+  console.log(capacity, people);
+  if(reservation_id) return next({ status: 400, message: "Table is occupied."});
+  if(capacity && (Number(people) <= Number(capacity))) next();
+  else return next({ status: 400, message: 'Table does not have enough capacity.'});
+}
+
+/* END VALIDATION MIDDLEWARE */
+
 async function create(req, res){
   const result = req.body.data;
   await knex('tables').insert(result); //insert body data into reservations
@@ -31,8 +63,15 @@ async function create(req, res){
 
 async function list(req, res){
   const data = await knex.from('tables').select('*').orderBy('table_name');
-  console.log(data);
   res.json({ data });
+}
+
+async function update(req, res){
+  const { reservation_id } = req.body.data;
+  const { table_id } = req.params;
+  console.log(table_id, reservation_id);
+  const data = await knex('tables').where('table_id', table_id).update('reservation_id', reservation_id).returning('*').then(records => records[0]);
+  res.status(200).json({ data });
 }
 
 module.exports = {
@@ -41,5 +80,12 @@ module.exports = {
     bodyHasResultProperty,
     validateTableData,
     asyncErrorBoundary(create),
+  ],
+  update: [
+    bodyHasResultProperty,
+    reservationExists,
+    reservationInReservations,
+    asyncErrorBoundary(capacityCheck),
+    asyncErrorBoundary(update)
   ]
 };
