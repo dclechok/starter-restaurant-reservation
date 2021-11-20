@@ -47,12 +47,10 @@ async function capacityCheck(req, res, next){
   const { people } = res.locals.reservation; //this will have the amount of people per the reservation
   const { capacity, reservation_id } = await knex.from('tables').where('table_id', table_id).then(table => table[0]); //fetch specific table's capacity
   // compare number of people vs number of capacity - if people are below the total capacity, then proceed to allow update, otherwise table is occupied
-  console.log(capacity, people);
   if(reservation_id) return next({ status: 400, message: "Table is occupied."});
   if(capacity && (Number(people) <= Number(capacity))) next();
   else return next({ status: 400, message: 'Table does not have enough capacity.'});
 }
-
 /* END VALIDATION MIDDLEWARE */
 
 async function create(req, res){
@@ -62,6 +60,7 @@ async function create(req, res){
 }
 
 async function list(req, res){
+  //list all tables
   const data = await knex.from('tables').select('*').orderBy('table_name');
   res.json({ data });
 }
@@ -69,9 +68,19 @@ async function list(req, res){
 async function update(req, res){
   const { reservation_id } = req.body.data;
   const { table_id } = req.params;
-  console.log(table_id, reservation_id);
   const data = await knex('tables').where('table_id', table_id).update('reservation_id', reservation_id).returning('*').then(records => records[0]);
   res.status(200).json({ data });
+}
+
+async function deleteTable(req, res, next){
+  const { table_id } = req.params;
+  const query = await knex('tables').select('*').where('table_id', table_id);
+  if(query.length === 0) return next({ status: 404, message: `Table ${table_id} is non-existant.`});
+  const { reservation_id } = query[0];
+  if(!reservation_id) return next({ status: 400, message: `Table ${table_id} is not occupied.`});
+  //delete seat aka remove reservation_id
+  const data = await knex('tables').where('table_id', table_id).update('reservation_id', null).then(records => records[0]);
+  res.status(200).json({ query });
 }
 
 module.exports = {
@@ -87,5 +96,6 @@ module.exports = {
     reservationInReservations,
     asyncErrorBoundary(capacityCheck),
     asyncErrorBoundary(update)
-  ]
+  ],
+  delete: asyncErrorBoundary(deleteTable),
 };
