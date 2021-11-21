@@ -80,6 +80,12 @@ async function deleteTable(req, res, next){
   if(!reservation_id) return next({ status: 400, message: `Table ${table_id} is not occupied.`}); //table is not occupied - no reservation id
   //delete seat aka remove reservation_id
   const data = await knex('tables').where('table_id', table_id).update('reservation_id', null).then(records => records[0]);
+  //set status of reservations
+  const too = await knex('reservations')
+    .join('tables')
+    .where('reservations.reservation_id', '=', 'tables.table_id')
+    .update('status', 'finished');
+    console.log(too);
   res.status(200).json({ data });
 }
 

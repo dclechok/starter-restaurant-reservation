@@ -70,7 +70,6 @@ function validateTime(req, res, next){
   const TOO_EARLY = 1030, TOO_LATE = 2230;
   let attemptedResTime = time.split('').slice(0, 2).join(''); //removing colon :
   attemptedResTime += time.split('').slice(3, 5).join('');
-  console.log(attemptedResTime, TOO_EARLY, TOO_LATE);
   if(Number(attemptedResTime) < TOO_EARLY || Number(attemptedResTime) > TOO_LATE) return next({ status: 400, message: 'Reservation from future not allowed.' });
   next();
 }
@@ -83,7 +82,10 @@ async function reservationExists(req, res, next){
 }
 
 function checkStatus(req, res, next){
-
+  const { status } = req.body.data;
+  console.log(status);
+  if(!status) return next({ status: 400, message: 'Status is invalid.'});
+  if(status === 'seated' || status === 'finished' || status === 'unknown') return next({ status: 400, message: `Reservation status is ${status} / finished.`});
   next();
 }
 
@@ -120,7 +122,7 @@ async function create(req, res){
 async function read(req, res){
   const { reservation_Id } = req.params; //get incoming param
   const data = await knex.from('reservations').select('*').where('reservation_id', reservation_Id).then(records => records[0]);
-  if(data) res.status(201).json({ data });
+  if(data) res.status(200).json({ data });
   else res.sendStatus(400);
 }
 
@@ -167,5 +169,8 @@ module.exports = {
     validateReservation,
     asyncErrorBoundary(update)
   ],
-  updateStatus: [asyncErrorBoundary(updateStatus)]
+  updateStatus: [
+    asyncErrorBoundary(reservationExists),
+    checkStatus,
+    asyncErrorBoundary(updateStatus)]
 };
