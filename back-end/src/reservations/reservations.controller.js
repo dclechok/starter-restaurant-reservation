@@ -102,6 +102,14 @@ async function reservationExists(req, res, next){
 /* END VALIDATION MIDDLEWARE */
 
 async function list(req, res) {
+
+  //if there is a mobile_number query then list by mobile_number
+  const queryMobileNumber = req.query.mobile_number;
+  if(queryMobileNumber){
+    const data = await knex('reservations').select('*').where('mobile_number', 'like', `%${queryMobileNumber}%`);
+    res.json({ data });
+  }
+  //if there is a date query then list by date
   const queryDate = req.query.date;
   const query = knex
     .from('reservations')
