@@ -11,20 +11,13 @@ const TIME_FORMAT = /^(0?[1-9]|1[0-9]|2[0-3]):[0-5][0-9]$/;  //valid regex forma
 // START VALIDATION MIDDLEWARE
 function bodyHasResultProperty(req, res, next) {
   const { data } = req.body;
-  console.log(data);
-  if (data) { //if body exists - move to validate body
-    return next();
-  }
-  next({
-    status: 400,
-    message: "A 'result' property is required.",
-  });
+  if(data) return next(); //if body exists - move to validate body
+  next({ status: 400, message: "A 'result' property is required." });
 }
 
 function validateReservation(req, res, next){
   const { first_name, last_name, mobile_number, reservation_date, reservation_time, people } = req.body.data;
   //validate each separate piece of the requests body data
-
   if(!first_name) return next({
     status: 400, message: 'Reservation must include a first_name.'
   });
@@ -71,31 +64,26 @@ function validateNoTuesdayReservation(req, res, next){
 }
 
 function validateTime(req, res, next){
-  //reservation time is an error if:
-  // the res time is before 10:30am
-  // the res time is after 9:30pm
+  //reservation time is an error if:  // the res time is before 10:30am  // the res time is after 9:30pm
   // only future reservations are allowed (after current time on day even current day)
   const { reservation_time: time } = req.body.data;
-  let tooEarly = new Date(), tooLate = new Date(); //our invalid reservation times
-  let attemptedResTime = new Date(); //reservation time to test
-  //build out invalid reservation times
-  tooEarly.setHours(10);
-  tooEarly.setMinutes(30);
-  tooLate.setHours(9);
-  tooLate.setMinutes(30);
-  //build attempted reservation date into date object for comparison
-  attemptedResTime.setHours(time.split('').slice(0, 1).join(''));
-  attemptedResTime.setMinutes(time.split('').slice(3).join(''));
-  if(attemptedResTime.getTime() > tooLate.getTime() || attemptedResTime.getTime() < tooEarly.getTime()) return next({
-    status: 400, message: 'Reservation time not available.',
-  });
+  const TOO_EARLY = 1030, TOO_LATE = 2230;
+  let attemptedResTime = time.split('').slice(0, 2).join(''); //removing colon :
+  attemptedResTime += time.split('').slice(3, 5).join('');
+  console.log(attemptedResTime, TOO_EARLY, TOO_LATE);
+  if(Number(attemptedResTime) < TOO_EARLY || Number(attemptedResTime) > TOO_LATE) return next({ status: 400, message: 'Reservation from future not allowed.' });
   next();
 }
 
 async function reservationExists(req, res, next){
   const { reservation_Id } = req.params;
   const query = await knex('reservations').select('*').where('reservation_id', reservation_Id).then(queries => queries[0]);
-  if(!query) return next({ status: 404, message: 'Reservation does not exist.'});
+  if(!query) return next({ status: 404, message: `Reservation ${reservation_Id} does not exist.`});
+  next();
+}
+
+function checkStatus(req, res, next){
+
   next();
 }
 
@@ -124,14 +112,15 @@ async function list(req, res) {
 
 async function create(req, res){
   const result = req.body.data;
-  await knex('reservations').insert(result); //insert body data into reservations
-  res.status(201).json({ data: result });
+  const data = await knex('reservations').insert(result).returning('*').then(results => results[0]); //insert body data into reservations
+  console.log(data);
+  res.status(201).json({ data });
 }
 
 async function read(req, res){
   const { reservation_Id } = req.params; //get incoming param
   const data = await knex.from('reservations').select('*').where('reservation_id', reservation_Id).then(records => records[0]);
-  if(data) res.status(200).json({ data });
+  if(data) res.status(201).json({ data });
   else res.sendStatus(400);
 }
 
@@ -168,10 +157,11 @@ module.exports = {
     validateReservation, 
     validateDate, 
     validateNoTuesdayReservation,
-    validateTime, 
+    validateTime,
+    checkStatus, 
     asyncErrorBoundary(create)
   ],
-  read: asyncErrorBoundary(read), 
+  read: [asyncErrorBoundary(reservationExists), asyncErrorBoundary(read)], 
   update: [
     asyncErrorBoundary(reservationExists), 
     validateReservation,
