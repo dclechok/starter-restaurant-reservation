@@ -5,13 +5,8 @@ const { whereNotExists } = require('../db/connection');
 /* BEGIN VALIDATION MIDDLEWARE */
 function bodyHasResultProperty(req, res, next) {
   const { data } = req.body; 
-  if (data) { //if body exists - move to validate body
-    return next();
-  }
-  next({
-    status: 400,
-    message: "A 'result' property is required.",
-  });
+  if (data) return next();
+  next({ status: 400, message: "A 'result' property is required." });
 }
 
 function validateTableData(req, res, next){
@@ -51,6 +46,35 @@ async function capacityCheck(req, res, next){
   if(capacity && (Number(people) <= Number(capacity))) next();
   else return next({ status: 400, message: 'Table does not have enough capacity.'});
 }
+
+async function tableOccupied(req, res, next){
+  const { table_id } = req.params;
+  const { reservation_id } = await knex.from('tables').where('table_id', table_id).then(table => table[0]); //fetch specific table's capacity
+  const query = await knex('reservations').where('reservation_id', reservation_id).select('status').then(res => res[0]);
+  res.locals.theResId = reservation_id;
+  if(query && query.status == 'seated') return next();
+  else return next({ status: 400, message: "Table is not occupied."});
+}
+
+async function checkAlreadySeated(req, res, next){
+  const { reservation_id } = req.body.data;
+  const data = await knex('reservations')
+  .where('reservation_id', reservation_id)
+  .returning('*').then(records => records[0]);
+  if(data.status === 'seated') return next({ status: 400, message: 'Table status is already seated or occupied.' });
+  next(); 
+}
+
+async function tableExists(req, res, next){
+  const { table_id } = req.params;
+  const query = await knex('tables').select('*').where('table_id', table_id); //make a query to see if table exists
+  // console.log(query);
+  if(query.length === 0) return next({ status: 404, message: `Table ${table_id} is non-existant.`}); //table id exist in Tables?
+  // const { reservation_id } = query[0];
+  // res.locals.res_id = reservation_id;
+  next();
+}
+
 /* END VALIDATION MIDDLEWARE */
 
 async function create(req, res){
@@ -68,24 +92,24 @@ async function list(req, res){
 async function update(req, res){
   const { reservation_id } = req.body.data;
   const { table_id } = req.params;
-  const data = await knex('tables').where('table_id', table_id).update('reservation_id', reservation_id).returning('*').then(records => records[0]);
+  const data = await knex('reservations')
+  .where('reservations.reservation_id', '=', reservation_id)
+  .update('status', 'seated')
+  .returning('*')
+  .then(records => records[0]);
+  await knex('tables').where('table_id', table_id).update('reservation_id', reservation_id);
   res.status(200).json({ data });
 }
 
 async function deleteTable(req, res, next){
-  const { table_id } = req.params;
-  const query = await knex('tables').select('*').where('table_id', table_id); //make a query to see if table exists
-  if(query.length === 0) return next({ status: 404, message: `Table ${table_id} is non-existant.`}); //table id exist in Tables?
-  const { reservation_id } = query[0];
-  if(!reservation_id) return next({ status: 400, message: `Table ${table_id} is not occupied.`}); //table is not occupied - no reservation id
-  //delete seat aka remove reservation_id
-  const data = await knex('tables').where('table_id', table_id).update('reservation_id', null).then(records => records[0]);
-  //set status of reservations
-  const too = await knex('reservations')
-    .join('tables')
-    .where('reservations.reservation_id', '=', 'tables.table_id')
-    .update('status', 'finished');
-    console.log(too);
+  //set status of reservations to finished
+  const reservation_id = res.locals.theResId;
+  console.log(reservation_id, 'hey');
+  const data = await knex('reservations')
+    .where('reservations.reservation_id', reservation_id)
+    .update('status', 'finished')
+    .returning('*')
+    .then(records => records[0]);
   res.status(200).json({ data });
 }
 
@@ -100,8 +124,13 @@ module.exports = {
     bodyHasResultProperty,
     reservationExists,
     reservationInReservations,
+    checkAlreadySeated,
     asyncErrorBoundary(capacityCheck),
     asyncErrorBoundary(update)
   ],
-  delete: asyncErrorBoundary(deleteTable),
+  delete: [
+    tableExists, 
+    tableOccupied,
+    asyncErrorBoundary(deleteTable)
+  ]
 };

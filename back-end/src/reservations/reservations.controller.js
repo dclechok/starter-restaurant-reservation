@@ -78,27 +78,37 @@ async function reservationExists(req, res, next){
   const { reservation_Id } = req.params;
   const query = await knex('reservations').select('*').where('reservation_id', reservation_Id).then(queries => queries[0]);
   if(!query) return next({ status: 404, message: `Reservation ${reservation_Id} does not exist.`});
+  res.locals.reservation = query;
   next();
 }
 
-function checkStatus(req, res, next){
+function checkStatusForPost(req, res, next){
   const { status } = req.body.data;
-  console.log(status);
-  if(!status) return next({ status: 400, message: 'Status is invalid.'});
-  if(status === 'seated' || status === 'finished' || status === 'unknown') return next({ status: 400, message: `Reservation status is ${status} / finished.`});
+  if(status === 'finished' || status === 'seated') return next({ status: 400, message: `Reservation status is ${status} / finished.`});
   next();
 }
 
+function checkStatusForPut(req, res, next){
+  if(!req.body.data.status || req.body.data.status === 'unknown')
+    return next({ status: 400, message: `Reservation status is ${req.body.data.status}.`});
+  next();
+}
+
+function checkStatusFromLocals(req, res, next){
+  if(res.locals.reservation.status === 'finished') return next({ status: 400, message: 'Status cannot be currently finished.' });
+  next();
+}
 /* END VALIDATION MIDDLEWARE */
 
 async function list(req, res) {
-
+  console.log('test?')
   //if there is a mobile_number query then list by mobile_number
   const queryMobileNumber = req.query.mobile_number;
   if(queryMobileNumber){
     const data = await knex('reservations').select('*').where('mobile_number', 'like', `%${queryMobileNumber}%`);
     res.json({ data });
   }
+  
   //if there is a date query then list by date
   const queryDate = req.query.date;
   const query = knex
@@ -106,16 +116,16 @@ async function list(req, res) {
     .select('*') //list all reservations, unless query with a key parameter is provided
     .orderByRaw('reservation_time') //earliest reservation time first
     if(queryDate){ //if query parameter, list reservations that match parameter key
-      query.where('reservation_date', queryDate);
+      query.where('reservation_date', queryDate).whereRaw("(status <> 'finished' or status is null)");
     }
     const data = await query;
+    console.log(data);
     res.json({ data });
 }
 
 async function create(req, res){
   const result = req.body.data;
   const data = await knex('reservations').insert(result).returning('*').then(results => results[0]); //insert body data into reservations
-  console.log(data);
   res.status(201).json({ data });
 }
 
@@ -160,7 +170,7 @@ module.exports = {
     validateDate, 
     validateNoTuesdayReservation,
     validateTime,
-    checkStatus, 
+    checkStatusForPost,
     asyncErrorBoundary(create)
   ],
   read: [asyncErrorBoundary(reservationExists), asyncErrorBoundary(read)], 
@@ -171,6 +181,7 @@ module.exports = {
   ],
   updateStatus: [
     asyncErrorBoundary(reservationExists),
-    checkStatus,
+    checkStatusForPut,
+    checkStatusFromLocals,
     asyncErrorBoundary(updateStatus)]
 };
