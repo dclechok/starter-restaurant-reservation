@@ -68,10 +68,7 @@ async function checkAlreadySeated(req, res, next){
 async function tableExists(req, res, next){
   const { table_id } = req.params;
   const query = await knex('tables').select('*').where('table_id', table_id); //make a query to see if table exists
-  // console.log(query);
   if(query.length === 0) return next({ status: 404, message: `Table ${table_id} is non-existant.`}); //table id exist in Tables?
-  // const { reservation_id } = query[0];
-  // res.locals.res_id = reservation_id;
   next();
 }
 
@@ -90,6 +87,7 @@ async function list(req, res){
 }
 
 async function update(req, res){
+  //update reservation status to seated if passes all validations
   const { reservation_id } = req.body.data;
   const { table_id } = req.params;
   const data = await knex('reservations')
@@ -97,14 +95,13 @@ async function update(req, res){
   .update('status', 'seated')
   .returning('*')
   .then(records => records[0]);
-  await knex('tables').where('table_id', table_id).update('reservation_id', reservation_id);
+  await knex('tables').where('table_id', table_id).update('reservation_id', reservation_id); //also up reservation_id in tables
   res.status(200).json({ data });
 }
 
 async function deleteTable(req, res, next){
   //set status of reservations to finished
   const reservation_id = res.locals.theResId;
-  console.log(reservation_id, 'hey');
   const data = await knex('reservations')
     .where('reservations.reservation_id', reservation_id)
     .update('status', 'finished')

@@ -101,7 +101,6 @@ function checkStatusFromLocals(req, res, next){
 /* END VALIDATION MIDDLEWARE */
 
 async function list(req, res) {
-  console.log('test?')
   //if there is a mobile_number query then list by mobile_number
   const queryMobileNumber = req.query.mobile_number;
   if(queryMobileNumber){
@@ -119,7 +118,6 @@ async function list(req, res) {
       query.where('reservation_date', queryDate).whereRaw("(status <> 'finished' or status is null)");
     }
     const data = await query;
-    console.log(data);
     res.json({ data });
 }
 
