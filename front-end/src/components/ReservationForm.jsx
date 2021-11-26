@@ -28,17 +28,16 @@ function ReservationForm() {
     //useEffect
     async function saveReservation() {
       try {
-        const response = await fetch(
+        await fetch(
           RESERVATIONS_URL,
           {
             method: "POST",
-            body: JSON.stringify(reservationData),
+            body: JSON.stringify({ data: reservationData }),
+            headers: {"Content-Type": "application/json"}
           },
-          { mode: "no-cors", header: { "Access-Control-Allow-Origin": "*" } }
         );
-        console.log(response);
       } catch (e) {
-        console.error(e, "Failed to fetch post request.");
+        console.error(e, "Failed to fetch post request."); // use ErrorAlert? 
       }
       console.log(JSON.stringify(reservationData));
     }

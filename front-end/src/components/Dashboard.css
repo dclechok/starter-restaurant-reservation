@@ -1,0 +1,20 @@
+.div-width{
+    border-style: solid;
+    border-color: black;
+    border-width: 2px;
+    width: 45%;
+    margin: 20px 20px;
+    padding: 10px;
+    min-width: 330px;
+    text-align: center;
+}
+
+.center-buttons{
+    text-align: center;
+}
+
+input{
+    margin-left: 6px;
+    max-width: 150px;
+}
+
