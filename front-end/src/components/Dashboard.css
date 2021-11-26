@@ -2,7 +2,7 @@
     border-style: solid;
     border-color: black;
     border-width: 2px;
-    width: 45%;
+    width: auto;
     margin: 20px 20px;
     padding: 10px;
     min-width: 330px;
@@ -13,8 +13,21 @@
     text-align: center;
 }
 
-input{
-    margin-left: 6px;
-    max-width: 150px;
+.reservation-list{
+    border-style: solid;
+    border-color: rgb(0, 0, 0);
+    border-width: 2px;
+    height: auto;
+    color: black;
+    margin-bottom: 20px;
+    padding: 0px;
 }
 
+.li-container{
+    font-size: 12px;
+    border-style: solid;
+    border-color: black;
+    border-width: 2px;
+    list-style: none;
+    width: auto;
+}
