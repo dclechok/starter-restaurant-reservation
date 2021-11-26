@@ -6,11 +6,11 @@ function ReservationForm() {
   const RESERVATIONS_URL = "http://localhost:5000/reservations";
   let history = useHistory(); //get history of page
   const defaultReservationData = {
-    first_name: " ",
-    last_name: " ",
-    mobile_number: " ",
-    reservation_date: " ",
-    reservation_time: " ",
+    first_name: "",
+    last_name: "",
+    mobile_number: "",
+    reservation_date: "",
+    reservation_time: "",
     people: 1, //1 is minimum
   };
 
@@ -19,23 +19,28 @@ function ReservationForm() {
   );
 
   function handleClick() {
-    history.goBack(); //cancel form takes us back a page
-  }
+    history.goBack();
+  } //cancel form takes us back a page
 
   function handleSubmit(e) {
     //validate fields and make call to API
     e.preventDefault(); //stop from reloading on submit
     //useEffect
-    console.log(reservationData);
     async function saveReservation() {
-      const response = await fetch(
-        RESERVATIONS_URL,
-        {
-          method: "POST",
-          body: JSON.stringify(reservationData),
-        }
-      );
+      try {
+        const response = await fetch(
+          RESERVATIONS_URL,
+          {
+            method: "POST",
+            body: JSON.stringify(reservationData),
+          },
+          { mode: "no-cors", header: { "Access-Control-Allow-Origin": "*" } }
+        );
         console.log(response);
+      } catch (e) {
+        console.error(e, "Failed to fetch post request.");
+      }
+      console.log(JSON.stringify(reservationData));
     }
     saveReservation();
 
@@ -44,7 +49,9 @@ function ReservationForm() {
 
   function handleChange(e) {
     e.preventDefault(); //stop from reloading on change
-    setReservationData({ [e.target.id]: e.target.value });
+    let changeObject = { ...reservationData };
+    changeObject[e.target.id] = e.target.value;
+    setReservationData(changeObject);
   }
 
   return (
