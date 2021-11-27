@@ -1,7 +1,7 @@
 import useQuery from "../utils/useQuery";
 import formatReservationDate from "../utils/format-reservation-date";
 import formatReservationTime from "../utils/format-reservation-time";
-import ErrorAlert from "../layout/ErrorAlert";
+// import ErrorAlert from "../layout/ErrorAlert";
 import "./Dashboard.css";
 import { useState, useEffect } from "react";
 
@@ -11,10 +11,12 @@ function Dashboard({ date }) {
   const getQueryDate = dateQuery.get("date");
   const RESERVATIONS_URL = "http://localhost:5000/reservations";
   const [reservations, setReservations] = useState([]);
-  const [reservationsError, setReservationsError] = useState("");
+  // const [reservationsError, setReservationsError] = useState("");
   const [useDate, setUseDate] = useState(getQueryDate ? getQueryDate : date);
+  // const [buttonChoice, setButtonChoice] = useState('');
 
   useEffect(() => {
+    const abortController = new AbortController();
     async function getReservationByDate() {
       try {
         const response = await fetch(RESERVATIONS_URL + `?date=${useDate}`, {
@@ -26,8 +28,8 @@ function Dashboard({ date }) {
       }
     }
     getReservationByDate();
-  }, []);
-  // console.log(reservations.data, 'he?');
+    return () => { abortController.abort() }; //cleanup, cancels any incoming api calls
+  }, [useDate]);
 
   function reservationListItemBuilder(listItem) {
     const {
@@ -39,8 +41,10 @@ function Dashboard({ date }) {
       reservation_date,
       people,
     } = listItem;
+
     formatReservationDate(listItem);
     formatReservationTime(listItem);
+
     return (
       <div>
         <span>Reservation ID: {reservation_id}</span>
@@ -58,14 +62,43 @@ function Dashboard({ date }) {
     );
   }
 
-  if(reservations.data) {
+  const handleClick = (e) => {
+    e.preventDefault();
+    let buildDateString = "";
+    if (e.target.id === "today") return setUseDate(date);
+    const currentDate = new Date(useDate);
+    if (e.target.id === "next") { //move forward on the calendar
+      currentDate.setDate(currentDate.getDate() + 2);
+      buildDateString =
+        currentDate.getFullYear() +
+        "-" +
+        (currentDate.getMonth() + 1) +
+        "-" +
+        currentDate.getDate();
+      return setUseDate(buildDateString);
+    }
+    if (e.target.id === "previous") { //move backward on the calendar
+      currentDate.setDate(currentDate.getDate() - 1);
+      buildDateString =
+        currentDate.getFullYear() +
+        "-" +
+        (currentDate.getMonth() + 1) +
+        "-" +
+        currentDate.getDate();
+      return setUseDate(buildDateString);
+    }
+  };
+
+  if (reservations.data) {
     return (
       <div className="div-width">
         <h2>Reservations for {useDate}</h2>
         {/*if no query date, go with today's date*/}
         <hr />
         {/*list all reservations for whatever date we have*/}
-        {reservations.data.length === 0 && <p>No reservations for this date found...</p>}
+        {reservations.data.length === 0 && (
+          <p>No reservations for this date found...</p>
+        )}
         <ul className="reservation-list">
           {reservations.data.map((reservation, index) => (
             <li className="li-container" key={index}>
@@ -74,13 +107,19 @@ function Dashboard({ date }) {
           ))}
         </ul>
         <div className="center-buttons">
-          <button type="button">Previous</button>
-          <button type="button">Today</button>
-          <button type="button">Next</button>
+          <button type="button" id="previous" onClick={handleClick}>
+            Previous
+          </button>
+          <button type="button" id="today" onClick={handleClick}>
+            Today
+          </button>
+          <button type="button" id="next" onClick={handleClick}>
+            Next
+          </button>
         </div>
       </div>
     );
-  } else return (<p>"Loading reservations..."</p>); //ErrorAlert?
+  } else return <p>"Loading reservations..."</p>; //ErrorAlert?
 }
 
 export default Dashboard;
