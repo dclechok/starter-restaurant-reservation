@@ -1,6 +1,7 @@
 import useQuery from "../utils/useQuery";
 import formatReservationDate from "../utils/format-reservation-date";
 import formatReservationTime from "../utils/format-reservation-time";
+// import buildDateString from "../utils/build-date-string";
 // import ErrorAlert from "../layout/ErrorAlert";
 import "./Dashboard.css";
 import { useState, useEffect } from "react";
@@ -12,11 +13,13 @@ function Dashboard({ date }) {
   const RESERVATIONS_URL = "http://localhost:5000/reservations";
   const [reservations, setReservations] = useState([]);
   // const [reservationsError, setReservationsError] = useState("");
-  const [useDate, setUseDate] = useState(getQueryDate ? getQueryDate : date);
+  const [useDate, setUseDate] = useState(getQueryDate ? getQueryDate : date); //today's date, or specific query date
   // const [buttonChoice, setButtonChoice] = useState('');
+  const [updatedDate, setUpdatedDate] = useState(new Date(useDate)); //the date we're currently looking up
 
   useEffect(() => {
     const abortController = new AbortController();
+ 
     async function getReservationByDate() {
       try {
         const response = await fetch(RESERVATIONS_URL + `?date=${useDate}`, {
@@ -28,8 +31,10 @@ function Dashboard({ date }) {
       }
     }
     getReservationByDate();
-    return () => { abortController.abort() }; //cleanup, cancels any incoming api calls
-  }, [useDate]);
+    return () => {
+      abortController.abort();
+    }; //cleanup, cancels any incoming api calls
+  }, [useDate, updatedDate]);
 
   function reservationListItemBuilder(listItem) {
     const {
@@ -63,30 +68,38 @@ function Dashboard({ date }) {
   }
 
   const handleClick = (e) => {
-    e.preventDefault();
+    console.log(e.target.id);
     let buildDateString = "";
-    if (e.target.id === "today") return setUseDate(date);
-    const currentDate = new Date(useDate);
-    if (e.target.id === "next") { //move forward on the calendar
-      currentDate.setDate(currentDate.getDate() + 2);
+    if (e.target.id === "today") {
+      setUpdatedDate(() => new Date(date));
+      setUseDate(() => date);
+    }
+    const currentDate = updatedDate;
+    // console.log(updatedDate, new Date(useDate), currentDate);
+    if (e.target.id === "next") {
+      //move forward on the calendar
+      currentDate.setDate(currentDate.getDate() + 1);
+      setUpdatedDate(() => currentDate);
       buildDateString =
         currentDate.getFullYear() +
         "-" +
         (currentDate.getMonth() + 1) +
         "-" +
         currentDate.getDate();
-      return setUseDate(buildDateString);
+      setUseDate(() => buildDateString);
     }
-    if (e.target.id === "previous") { //move backward on the calendar
-      currentDate.setDate(currentDate.getDate() - 1);
-      buildDateString =
-        currentDate.getFullYear() +
-        "-" +
-        (currentDate.getMonth() + 1) +
-        "-" +
-        currentDate.getDate();
-      return setUseDate(buildDateString);
-    }
+    // if (e.target.id === "previous") {
+    //   //move backward on the calendar
+    //   currentDate.setDate(currentDate.getDate() - 1);
+    //   setUpdatedDate(currentDate);
+    //   buildDateString =
+    //     currentDate.getFullYear() +
+    //     "-" +
+    //     (currentDate.getMonth() + 1) +
+    //     "-" +
+    //     currentDate.getDate();
+    //   return setUseDate(() => buildDateString);
+    // }
   };
 
   if (reservations.data) {
