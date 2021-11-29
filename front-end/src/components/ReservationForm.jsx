@@ -25,7 +25,7 @@ function ReservationForm() {
   function handleSubmit(e) {
     //validate fields and make call to API
     e.preventDefault(); //stop from reloading on submit
-    //useEffect
+    reservationData.people = Number(reservationData.people); //people must not be a string
     async function saveReservation() {
       try {
         await fetch(

@@ -12,14 +12,11 @@ function Dashboard({ date }) {
   const getQueryDate = dateQuery.get("date");
   const RESERVATIONS_URL = "http://localhost:5000/reservations";
   const [reservations, setReservations] = useState([]);
-  // const [reservationsError, setReservationsError] = useState("");
   const [useDate, setUseDate] = useState(getQueryDate ? getQueryDate : date); //today's date, or specific query date
-  // const [buttonChoice, setButtonChoice] = useState('');
-  const [updatedDate, setUpdatedDate] = useState(new Date(useDate)); //the date we're currently looking up
+  const [toggleButton, setToggleButton] = useState("none"); //toggle buttons
 
   useEffect(() => {
     const abortController = new AbortController();
- 
     async function getReservationByDate() {
       try {
         const response = await fetch(RESERVATIONS_URL + `?date=${useDate}`, {
@@ -31,10 +28,11 @@ function Dashboard({ date }) {
       }
     }
     getReservationByDate();
+    setToggleButton("none");
     return () => {
       abortController.abort();
     }; //cleanup, cancels any incoming api calls
-  }, [useDate, updatedDate]);
+  }, [useDate]);
 
   function reservationListItemBuilder(listItem) {
     const {
@@ -67,40 +65,34 @@ function Dashboard({ date }) {
     );
   }
 
-  const handleClick = (e) => {
-    console.log(e.target.id);
-    let buildDateString = "";
-    if (e.target.id === "today") {
-      setUpdatedDate(() => new Date(date));
-      setUseDate(() => date);
+  useEffect(() => {
+    function buildNewDate(newDateObjectToStringify) {
+      return setUseDate(
+        newDateObjectToStringify.getFullYear() +
+          "-" +
+          (newDateObjectToStringify.getMonth() + 1) +
+          "-" +
+          newDateObjectToStringify.getDate()
+      );
     }
-    const currentDate = updatedDate;
-    // console.log(updatedDate, new Date(useDate), currentDate);
-    if (e.target.id === "next") {
-      //move forward on the calendar
-      currentDate.setDate(currentDate.getDate() + 1);
-      setUpdatedDate(() => currentDate);
-      buildDateString =
-        currentDate.getFullYear() +
-        "-" +
-        (currentDate.getMonth() + 1) +
-        "-" +
-        currentDate.getDate();
-      setUseDate(() => buildDateString);
+
+    if (toggleButton === "today") {
+      setUseDate(date);
     }
-    // if (e.target.id === "previous") {
-    //   //move backward on the calendar
-    //   currentDate.setDate(currentDate.getDate() - 1);
-    //   setUpdatedDate(currentDate);
-    //   buildDateString =
-    //     currentDate.getFullYear() +
-    //     "-" +
-    //     (currentDate.getMonth() + 1) +
-    //     "-" +
-    //     currentDate.getDate();
-    //   return setUseDate(() => buildDateString);
-    // }
-  };
+    const newDateObjectToStringify = new Date(useDate.replace(/-/g, "/"));
+    if (toggleButton === "next") {
+      //build a new date object to stringify
+      //change format from 2021-12-12 to 2021/12/12 or else it is a day behind? bug?
+      newDateObjectToStringify.setDate(newDateObjectToStringify.getDate() + 1);
+      buildNewDate(newDateObjectToStringify);
+    }
+    if (toggleButton === "previous") {
+      //build a new date object to stringify
+      //change format from 2021-12-12 to 2021/12/12 or else it is a day behind? bug?
+      newDateObjectToStringify.setDate(newDateObjectToStringify.getDate() - 1);
+      buildNewDate(newDateObjectToStringify);
+    }
+  }, [toggleButton]);
 
   if (reservations.data) {
     return (
@@ -120,13 +112,25 @@ function Dashboard({ date }) {
           ))}
         </ul>
         <div className="center-buttons">
-          <button type="button" id="previous" onClick={handleClick}>
+          <button
+            type="button"
+            id="previous"
+            onClick={() => setToggleButton("previous")}
+          >
             Previous
           </button>
-          <button type="button" id="today" onClick={handleClick}>
+          <button
+            type="button"
+            id="today"
+            onClick={() => setToggleButton("today")}
+          >
             Today
           </button>
-          <button type="button" id="next" onClick={handleClick}>
+          <button
+            type="button"
+            id="next"
+            onClick={() => setToggleButton("next")}
+          >
             Next
           </button>
         </div>
