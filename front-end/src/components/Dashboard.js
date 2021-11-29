@@ -1,18 +1,12 @@
-import useQuery from "../utils/useQuery";
 import formatReservationDate from "../utils/format-reservation-date";
 import formatReservationTime from "../utils/format-reservation-time";
-// import buildDateString from "../utils/build-date-string";
-// import ErrorAlert from "../layout/ErrorAlert";
 import "./Dashboard.css";
 import { useState, useEffect } from "react";
 
-function Dashboard({ date }) {
-  //is there a date query?
-  const dateQuery = useQuery();
-  const getQueryDate = dateQuery.get("date");
+function Dashboard({ date, useDate, setUseDate }) {
+
   const RESERVATIONS_URL = "http://localhost:5000/reservations";
   const [reservations, setReservations] = useState([]);
-  const [useDate, setUseDate] = useState(getQueryDate ? getQueryDate : date); //today's date, or specific query date
   const [toggleButton, setToggleButton] = useState("none"); //toggle buttons
 
   useEffect(() => {
@@ -66,6 +60,7 @@ function Dashboard({ date }) {
   }
 
   useEffect(() => {
+    const abortController = new AbortController();
     function buildNewDate(newDateObjectToStringify) {
       return setUseDate(
         newDateObjectToStringify.getFullYear() +
@@ -79,19 +74,23 @@ function Dashboard({ date }) {
     if (toggleButton === "today") {
       setUseDate(date);
     }
+
+    //build a new date object to stringify
+    //change format from 2021-12-12 to 2021/12/12 or else it is a day behind? bug?
     const newDateObjectToStringify = new Date(useDate.replace(/-/g, "/"));
+
     if (toggleButton === "next") {
-      //build a new date object to stringify
-      //change format from 2021-12-12 to 2021/12/12 or else it is a day behind? bug?
       newDateObjectToStringify.setDate(newDateObjectToStringify.getDate() + 1);
       buildNewDate(newDateObjectToStringify);
     }
     if (toggleButton === "previous") {
-      //build a new date object to stringify
-      //change format from 2021-12-12 to 2021/12/12 or else it is a day behind? bug?
       newDateObjectToStringify.setDate(newDateObjectToStringify.getDate() - 1);
       buildNewDate(newDateObjectToStringify);
     }
+
+    return () => {
+      abortController.abort();
+    }; //cleanup, cancels any incoming api calls
   }, [toggleButton]);
 
   if (reservations.data) {

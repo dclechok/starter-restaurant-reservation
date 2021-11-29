@@ -2,9 +2,12 @@ import React, { useState } from "react"; //useEffect
 import "./ReservationForm.css";
 import { useHistory } from "react-router";
 
-function ReservationForm() {
+function ReservationForm({setUseDate}) {
+
   const RESERVATIONS_URL = "http://localhost:5000/reservations";
+
   let history = useHistory(); //get history of page
+
   const defaultReservationData = {
     first_name: "",
     last_name: "",
@@ -14,9 +17,7 @@ function ReservationForm() {
     people: 1, //1 is minimum
   };
 
-  const [reservationData, setReservationData] = useState(
-    defaultReservationData
-  );
+  const [reservationData, setReservationData] = useState( defaultReservationData );
 
   function handleClick() {
     history.goBack();
@@ -39,11 +40,15 @@ function ReservationForm() {
       } catch (e) {
         console.error(e, "Failed to fetch post request."); // use ErrorAlert? 
       }
-      console.log(JSON.stringify(reservationData));
     }
     saveReservation();
-
+    setUseDate(reservationData.reservation_date); //set date state variable, to rerender dashboard
     setReservationData(defaultReservationData);
+    //move to Dashboard with reservation
+    history.push({
+      pathname: "/reservations",
+      search: `?date=${reservationData.reservation_date}`
+    })
   }
 
   function handleChange(e) {
