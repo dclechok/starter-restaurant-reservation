@@ -183,22 +183,3 @@ module.exports = {
     checkStatusFromLocals,
     asyncErrorBoundary(updateStatus)]
 };
-
-
-
-
-
-
-
-
-
-// currentDate.setDate(currentDate.getDate() + 1);
-// setUpdatedDate(() => currentDate);
-// buildDateString =
-//   currentDate.getFullYear() +
-//   "-" +
-//   (currentDate.getMonth() + 1) +
-//   "-" +
-//   currentDate.getDate();
-// setUseDate(() => buildDateString);
-// }

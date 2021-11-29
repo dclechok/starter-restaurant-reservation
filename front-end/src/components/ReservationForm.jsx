@@ -2,8 +2,7 @@ import React, { useState } from "react"; //useEffect
 import "./ReservationForm.css";
 import { useHistory } from "react-router";
 
-function ReservationForm({setUseDate}) {
-
+function ReservationForm({ setUseDate, setErrors }) {
   const RESERVATIONS_URL = "http://localhost:5000/reservations";
 
   let history = useHistory(); //get history of page
@@ -25,11 +24,12 @@ function ReservationForm({setUseDate}) {
 
   function handleSubmit(e) {
     //validate fields and make call to API
+    setErrors(''); //reset errors
     e.preventDefault(); //stop from reloading on submit
     reservationData.people = Number(reservationData.people); //people must not be a string
     async function saveReservation() {
       try {
-        await fetch(
+        const response = await fetch(
           RESERVATIONS_URL,
           {
             method: "POST",
@@ -37,25 +37,28 @@ function ReservationForm({setUseDate}) {
             headers: {"Content-Type": "application/json"}
           },
         );
+        const responseInfo = await response.json();
+        if(responseInfo.error) setErrors(responseInfo.error);
+        setUseDate(reservationData.reservation_date); //set date state variable, to rerender dashboard
+        setReservationData(defaultReservationData);
+        //move to Dashboard with reservation
+        history.push({
+          pathname: "/reservations",
+          search: `?date=${reservationData.reservation_date}`
+        })
       } catch (e) {
         console.error(e, "Failed to fetch post request."); // use ErrorAlert? 
       }
     }
     saveReservation();
-    setUseDate(reservationData.reservation_date); //set date state variable, to rerender dashboard
-    setReservationData(defaultReservationData);
-    //move to Dashboard with reservation
-    history.push({
-      pathname: "/reservations",
-      search: `?date=${reservationData.reservation_date}`
-    })
+
   }
 
-  function handleChange(e) {
-    e.preventDefault(); //stop from reloading on change
-    let changeObject = { ...reservationData };
-    changeObject[e.target.id] = e.target.value;
-    setReservationData(changeObject);
+  const handleChange = ({ target }) => {
+    setReservationData({
+      ...reservationData,
+      [target.name]: target.value,
+    })
   }
 
   return (

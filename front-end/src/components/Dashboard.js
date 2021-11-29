@@ -2,13 +2,13 @@ import formatReservationDate from "../utils/format-reservation-date";
 import formatReservationTime from "../utils/format-reservation-time";
 import "./Dashboard.css";
 import { useState, useEffect } from "react";
+import ErrorAlert from "../layout/ErrorAlert";
 
-function Dashboard({ date, useDate, setUseDate }) {
-
+function Dashboard({ date, useDate, setUseDate, errors, setErrors }) {
   const RESERVATIONS_URL = "http://localhost:5000/reservations";
   const [reservations, setReservations] = useState([]);
   const [toggleButton, setToggleButton] = useState("none"); //toggle buttons
-
+ 
   useEffect(() => {
     const abortController = new AbortController();
     async function getReservationByDate() {
@@ -18,7 +18,7 @@ function Dashboard({ date, useDate, setUseDate }) {
         });
         setReservations(await response.json());
       } catch (e) {
-        console.error(e, "Failed to fetch get request."); // use ErrorAlert?
+        setErrors(e);
       }
     }
     getReservationByDate();
@@ -41,12 +41,13 @@ function Dashboard({ date, useDate, setUseDate }) {
 
     formatReservationDate(listItem);
     formatReservationTime(listItem);
-
     return (
       <div>
         <span>Reservation ID: {reservation_id}</span>
         <br />
-        <span>Name: {first_name + " " + last_name}</span>
+        <span>First Name: {first_name}</span>
+        <br />
+        <span>Last Name: {last_name}</span>
         <br />
         <span>Date of Reservation: {reservation_date}</span>
         <br />
@@ -100,6 +101,7 @@ function Dashboard({ date, useDate, setUseDate }) {
         {/*if no query date, go with today's date*/}
         <hr />
         {/*list all reservations for whatever date we have*/}
+        {errors && (<ErrorAlert error={errors} />)}
         {reservations.data.length === 0 && (
           <p>No reservations for this date found...</p>
         )}

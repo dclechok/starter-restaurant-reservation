@@ -17,6 +17,7 @@ import ReservationForm from '../components/ReservationForm';
 
 function Routes() {
   const [useDate, setUseDate] = useState(today); //raised state to pass between reservations/dashboard
+  const [errors, setErrors] = useState('');
 
   return (
     <Switch>
@@ -27,10 +28,10 @@ function Routes() {
         <Redirect to={"/dashboard"} />
       </Route>
       <Route exact path="/reservations/new">
-        <ReservationForm setUseDate={setUseDate} />
+        <ReservationForm setUseDate={setUseDate} setErrors={setErrors} />
       </Route>
       <Route path="/dashboard">
-        <Dashboard date={today()} useDate={useDate} setUseDate={setUseDate} />
+        <Dashboard date={today()} useDate={useDate} setUseDate={setUseDate} errors={errors} setErrors={setErrors} />
       </Route>
       <Route>
         <NotFound />
