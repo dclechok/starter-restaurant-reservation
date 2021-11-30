@@ -51,7 +51,6 @@ function ReservationForm({ setUseDate, setErrors }) {
       }
     }
     saveReservation();
-
   }
 
   const handleChange = ({ target }) => {
@@ -59,11 +58,11 @@ function ReservationForm({ setUseDate, setErrors }) {
       ...reservationData,
       [target.name]: target.value,
     })
-  }
+  };
 
   return (
     <div className="form-width">
-      <form>
+      <form onSubmit={handleSubmit}>
         <fieldset>
           <legend>Create a New Reservation:</legend>
           <hr />
@@ -126,7 +125,7 @@ function ReservationForm({ setUseDate, setErrors }) {
           </label>
           <br />
           <div className="center-buttons">
-            <button type="submit" onClick={handleSubmit}>
+            <button type="submit" >
               Submit
             </button>
             <button type="button" onClick={handleClick}>

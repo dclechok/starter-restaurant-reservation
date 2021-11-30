@@ -3,12 +3,14 @@ import formatReservationTime from "../utils/format-reservation-time";
 import "./Dashboard.css";
 import { useState, useEffect } from "react";
 import ErrorAlert from "../layout/ErrorAlert";
+import useQuery from "../utils/useQuery";
 
 function Dashboard({ date, useDate, setUseDate, errors, setErrors }) {
+  
   const RESERVATIONS_URL = "http://localhost:5000/reservations";
   const [reservations, setReservations] = useState([]);
   const [toggleButton, setToggleButton] = useState("none"); //toggle buttons
- 
+
   useEffect(() => {
     const abortController = new AbortController();
     async function getReservationByDate() {
@@ -16,8 +18,10 @@ function Dashboard({ date, useDate, setUseDate, errors, setErrors }) {
         const response = await fetch(RESERVATIONS_URL + `?date=${useDate}`, {
           method: "GET",
         });
-        setReservations(await response.json());
+        const newRes = await response.json();
+        setReservations(newRes.data || []);
       } catch (e) {
+        console.log(e);
         setErrors(e);
       }
     }
@@ -94,7 +98,7 @@ function Dashboard({ date, useDate, setUseDate, errors, setErrors }) {
     }; //cleanup, cancels any incoming api calls
   }, [toggleButton]);
 
-  if (reservations.data) {
+  // if (reservations.data) {
     return (
       <div className="div-width">
         <h2>Reservations for {useDate}</h2>
@@ -102,11 +106,11 @@ function Dashboard({ date, useDate, setUseDate, errors, setErrors }) {
         <hr />
         {/*list all reservations for whatever date we have*/}
         {errors && (<ErrorAlert error={errors} />)}
-        {reservations.data.length === 0 && (
+        {reservations.length === 0 && (
           <p>No reservations for this date found...</p>
         )}
         <ul className="reservation-list">
-          {reservations.data.map((reservation, index) => (
+          {reservations.map((reservation, index) => (
             <li className="li-container" key={index}>
               {reservationListItemBuilder(reservation)}
             </li>
@@ -137,7 +141,7 @@ function Dashboard({ date, useDate, setUseDate, errors, setErrors }) {
         </div>
       </div>
     );
-  } else return <p>"Loading reservations..."</p>; //ErrorAlert?
+  // } else return <p>"Loading reservations..." {useDate}</p>; //ErrorAlert?
 }
 
 export default Dashboard;

@@ -6,6 +6,7 @@ import Dashboard from "../components/Dashboard";
 import NotFound from "./NotFound";
 import { today } from "../utils/date-time";
 import ReservationForm from '../components/ReservationForm';
+import useQuery from "../utils/useQuery";
 
 /**
  * Defines all the routes for the application.
@@ -16,7 +17,9 @@ import ReservationForm from '../components/ReservationForm';
  */
 
 function Routes() {
-  const [useDate, setUseDate] = useState(today); //raised state to pass between reservations/dashboard
+  const query = useQuery();
+  const dateQuery = query.get('date');
+  const [useDate, setUseDate] = useState(dateQuery? dateQuery : today); //raised state to pass between reservations/dashboard
   const [errors, setErrors] = useState('');
 
   return (

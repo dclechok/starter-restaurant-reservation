@@ -32,15 +32,15 @@ describe("US-01 - Create and list reservations - E2E", () => {
   });
 
   describe("/reservations/new page", () => {
-    test("filling and submitting form creates a new reservation and then displays the dashboard for the reservation date", async () => {
+    test.only("filling and submitting form creates a new reservation and then displays the dashboard for the reservation date", async () => {
       const lastName = Date.now().toString(10);
 
       await page.type("input[name=first_name]", "James");
       await page.type("input[name=last_name]", lastName);
-      await page.type("input[name=mobile_number]", "555-1212");
-      await page.type("input[name=reservation_date]", "01012035");
-      await page.type("input[name=reservation_time]", "1330");
-      await page.type("input[name=people]", "2");
+      await page.type("input[name=mobile_number]", "555-1212"); // 412-505-5565
+      await page.type("input[name=reservation_date]", "01012035"); // YYYY-MM-DD
+      await page.type("input[name=reservation_time]", "1330"); //13:30 with and without
+      await page.type("input[name=people]", "2"); //as a string, or number
 
       await page.screenshot({
         path: ".screenshots/us-01-submit-before.png",
