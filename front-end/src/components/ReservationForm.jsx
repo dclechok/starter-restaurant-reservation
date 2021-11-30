@@ -27,6 +27,15 @@ function ReservationForm({ setUseDate, setErrors }) {
     setErrors(''); //reset errors
     e.preventDefault(); //stop from reloading on submit
     reservationData.people = Number(reservationData.people); //people must not be a string
+
+    let formattedDate = reservationData.reservation_date; //format date from 01012035 to 2035-01-01 which our backend accepts
+    formattedDate = formattedDate.substring(4, 8) + '-' + formattedDate.substring(2, 4) + '-' + formattedDate.substring(0, 2);
+    reservationData.reservation_date = formattedDate;
+    //format time -- throw a ':' in there so the backend can process
+    let time = reservationData.reservation_time; // 1330
+    const formattedTime = time.split('');
+    formattedTime.splice(2, 0, ':');
+    reservationData.reservation_time = formattedTime.join('');
     async function saveReservation() {
       try {
         const response = await fetch(

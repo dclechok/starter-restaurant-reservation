@@ -32,7 +32,7 @@ describe("US-01 - Create and list reservations - E2E", () => {
   });
 
   describe("/reservations/new page", () => {
-    test.only("filling and submitting form creates a new reservation and then displays the dashboard for the reservation date", async () => {
+    test("filling and submitting form creates a new reservation and then displays the dashboard for the reservation date", async () => {
       const lastName = Date.now().toString(10);
 
       await page.type("input[name=first_name]", "James");
