@@ -116,7 +116,6 @@ async function list(req, res) {
     .orderByRaw('reservation_time') //earliest reservation time first
     if(queryDate){ 
       // const formatQueryDate = queryDate.substring(0, 2) + queryDate.substring(2, 4) + queryDate.substring(4, 7);
-      console.log(queryDate, 'hel2ererer');
       query.where('reservation_date', queryDate).whereRaw("(status <> 'finished' or status is null)");
     }
     const data = await query;

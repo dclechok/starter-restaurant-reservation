@@ -35,12 +35,12 @@ describe("US-04 - Seat reservation - E2E", () => {
       await page.goto(`${baseURL}/tables/new`, { waitUntil: "networkidle0" });
     });
 
-    test("filling and submitting form creates a new table", async () => {
+    test.only("filling and submitting form creates a new table", async () => {
       const tableName = `#${Date.now().toString(10)}`;
 
       await page.type("input[name=table_name]", tableName);
       await page.type("input[name=capacity]", "6");
-
+      console.log(tableName);
       await page.screenshot({
         path: ".screenshots/us-04-create-table-submit-before.png",
         fullPage: true,

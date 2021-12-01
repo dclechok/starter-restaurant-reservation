@@ -3,7 +3,6 @@ import formatReservationTime from "../utils/format-reservation-time";
 import "./Dashboard.css";
 import { useState, useEffect } from "react";
 import ErrorAlert from "../layout/ErrorAlert";
-import useQuery from "../utils/useQuery";
 
 function Dashboard({ date, useDate, setUseDate, errors, setErrors }) {
   
@@ -21,7 +20,6 @@ function Dashboard({ date, useDate, setUseDate, errors, setErrors }) {
         const newRes = await response.json();
         setReservations(newRes.data || []);
       } catch (e) {
-        console.log(e);
         setErrors(e);
       }
     }
@@ -76,9 +74,7 @@ function Dashboard({ date, useDate, setUseDate, errors, setErrors }) {
       );
     }
 
-    if (toggleButton === "today") {
-      setUseDate(date);
-    }
+    if (toggleButton === "today") setUseDate(date);
 
     //build a new date object to stringify
     //change format from 2021-12-12 to 2021/12/12 or else it is a day behind? bug?
@@ -92,7 +88,6 @@ function Dashboard({ date, useDate, setUseDate, errors, setErrors }) {
       newDateObjectToStringify.setDate(newDateObjectToStringify.getDate() - 1);
       buildNewDate(newDateObjectToStringify);
     }
-
     return () => {
       abortController.abort();
     }; //cleanup, cancels any incoming api calls
@@ -141,7 +136,7 @@ function Dashboard({ date, useDate, setUseDate, errors, setErrors }) {
         </div>
       </div>
     );
-  // } else return <p>"Loading reservations..." {useDate}</p>; //ErrorAlert?
+  // } else return <p>"Loading reservations..." {useDate}</p>;
 }
 
 export default Dashboard;
