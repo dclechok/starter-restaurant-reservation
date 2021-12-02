@@ -21,6 +21,10 @@ legend{
     text-align: center;
 }
 
+option{
+    text-align: center;
+}
+
 select{
     margin-left: 15px;
 }

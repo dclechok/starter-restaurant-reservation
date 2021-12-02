@@ -20,7 +20,6 @@ function ReservationSeatForm() {
     loadTables();
   }, []);
 
-  console.log(tables);
   return (
     <div className="form-width">
       <form>
@@ -29,10 +28,15 @@ function ReservationSeatForm() {
           <hr />
           <label htmlFor="table_id">Tables:</label>
           <select name="table_id" id="table_id">
-          {tables && tables.map((table, index) => {
-            // <option value={index}>({table.table_name - table.capacity})</option>
-            <option>Hello</option>
-          })}
+            <option value="null"> - Select Table - </option>
+            {tables &&
+              tables.map((table, index) => { 
+                return (
+                  <option value={table.id} key={index}>
+                    {table.table_name} - {table.capacity}
+                  </option>
+                );
+              })}
           </select>
           <br />
           <div className="center-buttons">
