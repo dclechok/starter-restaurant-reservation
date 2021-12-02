@@ -5,12 +5,14 @@ import { useState, useEffect } from "react";
 import ErrorAlert from "../layout/ErrorAlert";
 
 function Dashboard({ date, useDate, setUseDate, errors, setErrors }) {
-  
   const RESERVATIONS_URL = "http://localhost:5000/reservations";
+  const TABLES_URL = "http://localhost:5000/tables";
   const [reservations, setReservations] = useState([]);
   const [toggleButton, setToggleButton] = useState("none"); //toggle buttons
+  const [tables, setTables] = useState([]);
 
   useEffect(() => {
+    //fetch reservations based on useDate
     const abortController = new AbortController();
     async function getReservationByDate() {
       try {
@@ -30,6 +32,38 @@ function Dashboard({ date, useDate, setUseDate, errors, setErrors }) {
     }; //cleanup, cancels any incoming api calls
   }, [useDate]);
 
+  useEffect(() => {
+    const abortController = new AbortController();
+    async function getTablesList() {
+      try {
+        const response = await fetch(TABLES_URL, { method: "GET" });
+        const newTablesList = await response.json();
+        setTables(newTablesList.data || []);
+      } catch (e) {
+        setErrors(e);
+      }
+    }
+    getTablesList();
+    return () => {
+      abortController.abort();
+    }; //cleanup, cancels any incoming api calls
+  }, []);
+
+  function tableItemBuilder(table) {
+    const { table_id, table_name, capacity } = table;
+    return (
+      <div className="render-res">
+        <span>Table ID: {table_id}</span>
+        <br />
+        <span>Table Name: {table_name}</span>
+        <br />
+        <span>Capacity: {capacity}</span>
+        <br />
+        <span data-table-id-status={table.table_id}>Status: Free???</span>
+      </div>
+    );
+  }
+
   function reservationListItemBuilder(listItem) {
     const {
       reservation_id,
@@ -44,7 +78,7 @@ function Dashboard({ date, useDate, setUseDate, errors, setErrors }) {
     formatReservationDate(listItem);
     formatReservationTime(listItem);
     return (
-      <div>
+      <div className="render-res">
         <span>Reservation ID: {reservation_id}</span>
         <br />
         <span>First Name: {first_name}</span>
@@ -58,6 +92,12 @@ function Dashboard({ date, useDate, setUseDate, errors, setErrors }) {
         <span>Mobile Number: {mobile_number}</span>
         <br />
         <span>Amount of People: {people}</span>
+        <br />
+        <a href={`/reservations/${reservation_id}/seat`}>
+          <button className="seat-button" type="button">
+            Seat
+          </button>
+        </a>
       </div>
     );
   }
@@ -94,48 +134,64 @@ function Dashboard({ date, useDate, setUseDate, errors, setErrors }) {
   }, [toggleButton]);
 
   // if (reservations.data) {
-    return (
-      <div className="div-width">
-        <h2>Reservations for {useDate}</h2>
-        {/*if no query date, go with today's date*/}
-        <hr />
-        {/*list all reservations for whatever date we have*/}
-        {errors && (<ErrorAlert error={errors} />)}
-        {reservations.length === 0 && (
-          <p>No reservations for this date found...</p>
-        )}
-        <ul className="reservation-list">
-          {reservations.map((reservation, index) => (
-            <li className="li-container" key={index}>
-              {reservationListItemBuilder(reservation)}
-            </li>
-          ))}
-        </ul>
-        <div className="center-buttons">
-          <button
-            type="button"
-            id="previous"
-            onClick={() => setToggleButton("previous")}
-          >
-            Previous
-          </button>
-          <button
-            type="button"
-            id="today"
-            onClick={() => setToggleButton("today")}
-          >
-            Today
-          </button>
-          <button
-            type="button"
-            id="next"
-            onClick={() => setToggleButton("next")}
-          >
-            Next
-          </button>
+  return (
+    <div className="main-div-width">
+      <div className="flex-container">
+        <div className="left-div">
+          <h2>Reservations for {useDate}</h2>
+          {/*if no query date, go with today's date*/}
+          <hr />
+          {/*list all reservations for whatever date we have*/}
+          {errors && <ErrorAlert error={errors} />}
+          {reservations.length === 0 && (
+            <p>No reservations for this date found...</p>
+          )}
+          <ul className="reservation-list">
+            {reservations.map((reservation, index) => (
+              <li className="li-container" key={index}>
+                {reservationListItemBuilder(reservation)}
+              </li>
+            ))}
+          </ul>
+          <div className="center-buttons">
+            <button
+              type="button"
+              id="previous"
+              onClick={() => setToggleButton("previous")}
+            >
+              Previous
+            </button>
+            <button
+              type="button"
+              id="today"
+              onClick={() => setToggleButton("today")}
+            >
+              Today
+            </button>
+            <button
+              type="button"
+              id="next"
+              onClick={() => setToggleButton("next")}
+            >
+              Next
+            </button>
+          </div>
+        </div>
+        <div className="right-div">
+          <h2>Tables</h2>
+          <hr />
+          {tables.length === 0 && <p>No tables exist...</p>}
+          <ul className="reservation-list">
+            {tables.map((table, index) => (
+              <li className="li-container" key={index}>
+                {tableItemBuilder(table)}
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
-    );
+    </div>
+  );
   // } else return <p>"Loading reservations..." {useDate}</p>;
 }
 

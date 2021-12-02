@@ -1,4 +1,4 @@
-.div-width{
+.main-div-width{
     border-style: solid;
     border-color: black;
     border-width: 2px;
@@ -11,16 +11,45 @@
 
 .center-buttons{
     text-align: center;
+    margin-bottom: 12px;
+}
+
+hr{
+    width: 75%;
 }
 
 .reservation-list{
     border-style: solid;
     border-color: rgb(0, 0, 0);
-    border-width: 2px;
+    border-width: 1px;
     height: auto;
     color: black;
     margin-bottom: 20px;
     padding: 0px;
+}
+
+.flex-container{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    border-style: solid;
+    border-width: 3px;
+    border-color: black;
+}
+
+.left-div{
+    width: 50%;
+}
+
+
+.right-div{
+    width: 50%;
+}
+
+.render-res{
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 .li-container{
@@ -30,4 +59,8 @@
     border-width: 2px;
     list-style: none;
     width: auto;
+}
+
+.seat-button{
+    margin-top: 10px;
 }

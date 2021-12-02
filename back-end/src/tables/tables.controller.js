@@ -76,8 +76,8 @@ async function tableExists(req, res, next){
 
 async function create(req, res){
   const result = req.body.data;
-  await knex('tables').insert(result); //insert body data into reservations
-  res.status(201).json({ data: result });
+  const data = await knex('tables').insert(result).returning('*').then(results => results[0]); //insert body data into tables
+  res.status(201).json({ data });
 }
 
 async function list(req, res){

@@ -7,6 +7,7 @@ import NotFound from "./NotFound";
 import { today } from "../utils/date-time";
 import ReservationForm from "../components/ReservationForm";
 import TablesForm from "../components/TablesForm";
+import ReservationSeatForm from "../components/ReservationSeatForm";
 import useQuery from "../utils/useQuery";
 
 /**
@@ -33,6 +34,9 @@ function Routes() {
       </Route>
       <Route exact path="/reservations/new">
         <ReservationForm setUseDate={setUseDate} setErrors={setErrors} />
+      </Route>
+      <Route exact path="/reservations/:reservation_id/seat">
+        <ReservationSeatForm />
       </Route>
       <Route exact path="/tables/new">
         <TablesForm />

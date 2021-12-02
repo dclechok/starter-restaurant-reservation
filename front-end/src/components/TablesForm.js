@@ -1,45 +1,50 @@
 import { useHistory } from "react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 function TablesForm() {
   const TABLES_URL = "http://localhost:5000/tables";
   const history = useHistory();
   const defaultTableData = {
     table_name: "",
-    capacity: 1,
+    capacity: 0,
   };
 
   const [tableData, setTableData] = useState(defaultTableData);
+  const [validTable, setValidTable] = useState(false);
+
+  useEffect(() => { //move to dashboard if table entered is valid
+    if(validTable){
+      history.push({
+        pathname: "/dashboard",
+      });
+    }
+  }, [validTable]);
+
   function handleSubmit(e) {
     e.preventDefault();
+    // setValidTable(false);
     const abortController = new AbortController();
     //validateFormData
     //call to API
     tableData.capacity = Number(tableData.capacity);
     async function createNewTable() {
       try {
-        await fetch(TABLES_URL, {
+        const response = await fetch(TABLES_URL, {
           method: "POST",
           body: JSON.stringify({ data: tableData }),
           headers: { "Content-Type": "application/json" },
         });
+        const resJson = await response.json();
+        if(resJson.data) setValidTable(true);
       } catch (e) {
+        setValidTable(false);
         console.log(e);
       }
-      //   console.log(await response.json());
       return () => {
         abortController.abort();
       };
     }
     createNewTable();
-    //take us back to the dashboard
-    history.push({
-      pathname: "/dashboard",
-    });
-  }
-
-  function handleClick() {
-    history.goBack();
   }
 
   function handleChange({ target }) {
@@ -68,13 +73,14 @@ function TablesForm() {
           <input
             name="capacity"
             id="table_name"
-            type="number"
+            type="text"
             onChange={handleChange}
+            value={tableData.capacity}
           />
           <br />
           <div className="center-buttons">
             <button type="submit">Submit</button>
-            <button type="button" onClick={handleClick}>
+            <button type="button" onClick={() => history.goBack()}>
               Cancel
             </button>
           </div>
