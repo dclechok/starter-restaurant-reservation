@@ -23,7 +23,8 @@ function validateTableData(req, res, next){
 function reservationExists(req, res, next){
   //check to see if reservation exists
   const { reservation_id } = req.body.data;
-  if(!reservation_id) return next({ status: 400, message: 'Reservation with this reservation_id does not exist.'});
+  console.log(req.body.data);
+  if(!reservation_id) return next({ status: 400, message: 'Data reservation_id does not exist.'});
   next();
 }
 
@@ -107,6 +108,7 @@ async function deleteTable(req, res, next){
     .update('status', 'finished')
     .returning('*')
     .then(records => records[0]);
+  console.log(data);
   res.status(200).json({ data });
 }
 

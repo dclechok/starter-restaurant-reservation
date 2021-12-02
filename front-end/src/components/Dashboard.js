@@ -1,7 +1,7 @@
 import formatReservationDate from "../utils/format-reservation-date";
 import formatReservationTime from "../utils/format-reservation-time";
 import "./Dashboard.css";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import ErrorAlert from "../layout/ErrorAlert";
 
 function Dashboard({ date, useDate, setUseDate, errors, setErrors }) {
@@ -9,6 +9,7 @@ function Dashboard({ date, useDate, setUseDate, errors, setErrors }) {
   const TABLES_URL = "http://localhost:5000/tables";
   const [reservations, setReservations] = useState([]);
   const [toggleButton, setToggleButton] = useState("none"); //toggle buttons
+  const [toggleReload, setToggleReload] = useState(false); //toggle tables reload
   const [tables, setTables] = useState([]);
 
   useEffect(() => {
@@ -47,19 +48,61 @@ function Dashboard({ date, useDate, setUseDate, errors, setErrors }) {
     return () => {
       abortController.abort();
     }; //cleanup, cancels any incoming api calls
-  }, []);
+  }, [toggleReload]);
+
+  function handleFinish(e) {
+    const table_id = e.currentTarget.id;
+    console.log(table_id);
+    const result = window.confirm(
+      "Is this table ready to seat new guests? This cannot be undone."
+    );
+    async function deleteSeat() {
+      try {
+        const response = await fetch(TABLES_URL + `/${table_id}` + "/seat", {
+          method: "DELETE",
+        });
+        const resJson = await response.json();
+        console.log(resJson);
+        setToggleReload(true);
+      } catch (e) {
+        console.log(e);
+      }
+    }
+    if(result) deleteSeat();
+  }
 
   function tableItemBuilder(table) {
-    const { table_id, table_name, capacity } = table;
+    let { table_id, table_name, capacity, reservation_id } = table;
+    let status = "Occupied";
+    if (!reservation_id) {
+      reservation_id = "N/A";
+      status = "Free";
+    }
     return (
       <div className="render-res">
         <span>Table ID: {table_id}</span>
         <br />
         <span>Table Name: {table_name}</span>
         <br />
+        <span>Reservation ID: {reservation_id}</span>
+        <br />
         <span>Capacity: {capacity}</span>
         <br />
-        <span data-table-id-status={table.table_id}>Status: Free???</span>
+        <span data-table-id-status={table.table_id}>Status: {status}</span>
+        {status === "Occupied" && (
+          <React.Fragment>
+            <br />
+            <button
+              data-table-id-finish={table.table_id}
+              type="button"
+              id={table.table_id}
+              className="finish-button"
+              onClick={handleFinish}
+            >
+              Finish
+            </button>
+          </React.Fragment>
+        )}
       </div>
     );
   }

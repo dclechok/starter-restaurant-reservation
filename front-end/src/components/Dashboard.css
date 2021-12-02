@@ -61,6 +61,6 @@ hr{
     width: auto;
 }
 
-.seat-button{
+.seat-button, .finish-button{
     margin-top: 10px;
 }
