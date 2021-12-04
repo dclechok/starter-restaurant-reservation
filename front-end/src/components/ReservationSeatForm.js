@@ -2,7 +2,7 @@ import "./ReservationSeatForm.css";
 import { useEffect, useState } from "react";
 import { useHistory, useParams } from "react-router";
 
-function ReservationSeatForm() {
+function ReservationSeatForm({ setUseDate }) {
   const TABLES_URL = "http://localhost:5000/tables";
   const history = useHistory();
   const [tables, setTables] = useState();
@@ -34,6 +34,7 @@ function ReservationSeatForm() {
         });
         const resJson = await response.json();
         if (resJson.data) { //if request response is valid, push us back to dashboard
+          setUseDate(resJson.data.reservation_date.slice(0, 9)); //format date from date object
           history.push({
             pathname: "/dashboard",
           });

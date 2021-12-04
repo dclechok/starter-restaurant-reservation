@@ -36,7 +36,7 @@ function Routes() {
         <ReservationForm setUseDate={setUseDate} setErrors={setErrors} />
       </Route>
       <Route exact path="/reservations/:reservation_id/seat">
-        <ReservationSeatForm />
+        <ReservationSeatForm setUseDate={setUseDate} />
       </Route>
       <Route exact path="/tables/new">
         <TablesForm />

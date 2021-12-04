@@ -11,6 +11,7 @@ function Dashboard({ date, useDate, setUseDate, errors, setErrors }) {
   const [toggleButton, setToggleButton] = useState("none"); //toggle buttons
   const [toggleReload, setToggleReload] = useState(false); //toggle tables reload
   const [tables, setTables] = useState([]);
+  // const [status, setStatus] = useState([]);
 
   useEffect(() => {
     //fetch reservations based on useDate
@@ -21,6 +22,7 @@ function Dashboard({ date, useDate, setUseDate, errors, setErrors }) {
           method: "GET",
         });
         const newRes = await response.json();
+        console.log(newRes);
         setReservations(newRes.data || []);
       } catch (e) {
         setErrors(e);
@@ -33,7 +35,7 @@ function Dashboard({ date, useDate, setUseDate, errors, setErrors }) {
     }; //cleanup, cancels any incoming api calls
   }, [useDate]);
 
-  useEffect(() => {
+  useEffect(() => { //load tables
     const abortController = new AbortController();
     async function getTablesList() {
       try {
@@ -53,25 +55,22 @@ function Dashboard({ date, useDate, setUseDate, errors, setErrors }) {
   function handleFinish(e) {
     setToggleReload(false);
     const table_id = e.currentTarget.id;
-    console.log(table_id);
-    const result = window.confirm(
-      "Is this table ready to seat new guests? This cannot be undone."
-    );
     async function deleteSeat() {
       try {
-        const response = await fetch(TABLES_URL + `/${table_id}` + "/seat", {
+        await fetch(TABLES_URL + `/${table_id}` + "/seat", {
           method: "DELETE",
         });
-        const resJson = await response.json();
-        console.log(resJson);
-        console.log(toggleReload);
         setToggleReload(true);
-        console.log(toggleReload);
       } catch (e) {
         console.log(e);
       }
     }
-    if(result) deleteSeat();
+    if (
+      window.confirm(
+        "Is this table ready to seat new guests? This cannot be undone."
+      )
+    )
+      deleteSeat();
   }
 
   function tableItemBuilder(table) {
@@ -79,8 +78,9 @@ function Dashboard({ date, useDate, setUseDate, errors, setErrors }) {
     let status = "Occupied";
     if (!reservation_id) {
       reservation_id = "N/A";
-      status = "Free";
+      status = "free";
     }
+
     return (
       <div className="render-res">
         <span>Table ID: {table_id}</span>
@@ -110,8 +110,8 @@ function Dashboard({ date, useDate, setUseDate, errors, setErrors }) {
     );
   }
 
-  function reservationListItemBuilder(listItem) {
-    const {
+  function reservationListItemBuilder(reservation) {
+    let {
       reservation_id,
       first_name,
       last_name,
@@ -119,10 +119,13 @@ function Dashboard({ date, useDate, setUseDate, errors, setErrors }) {
       reservation_time,
       reservation_date,
       people,
-    } = listItem;
+      status,
+    } = reservation;
+    if (!status) status = "booked";
 
-    formatReservationDate(listItem);
-    formatReservationTime(listItem);
+    formatReservationDate(reservation);
+    formatReservationTime(reservation);
+
     return (
       <div className="render-res">
         <span>Reservation ID: {reservation_id}</span>
@@ -139,11 +142,17 @@ function Dashboard({ date, useDate, setUseDate, errors, setErrors }) {
         <br />
         <span>Amount of People: {people}</span>
         <br />
-        <a href={`/reservations/${reservation_id}/seat`}>
-          <button className="seat-button" type="button">
-            Seat
-          </button>
-        </a>
+        <span data-reservation-id-status={reservation.reservation_id}>
+          Status: {status}
+        </span>
+        <br />
+        {status == 'booked' && (
+          <a href={`/reservations/${reservation_id}/seat`}>
+            <button className="seat-button" type="button">
+              Seat
+            </button>
+          </a>
+        )}
       </div>
     );
   }
