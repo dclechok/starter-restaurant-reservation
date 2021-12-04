@@ -96,7 +96,7 @@ describe("US-05 - Finish an occupied table - E2E", () => {
         `[data-table-id-status="${table.table_id}"]`,
         "free"
       );
-
+      
       expect(containsFree).toBe(true);
     });
 

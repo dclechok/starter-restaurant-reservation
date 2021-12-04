@@ -108,6 +108,10 @@ async function deleteTable(req, res, next){
     .update('status', 'finished')
     .returning('*')
     .then(records => records[0]);
+
+  await knex('tables')
+    .where('table_id', req.params.table_id)
+    .update('reservation_id', null);
   console.log(data);
   res.status(200).json({ data });
 }

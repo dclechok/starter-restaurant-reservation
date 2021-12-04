@@ -51,6 +51,7 @@ function Dashboard({ date, useDate, setUseDate, errors, setErrors }) {
   }, [toggleReload]);
 
   function handleFinish(e) {
+    setToggleReload(false);
     const table_id = e.currentTarget.id;
     console.log(table_id);
     const result = window.confirm(
@@ -63,7 +64,9 @@ function Dashboard({ date, useDate, setUseDate, errors, setErrors }) {
         });
         const resJson = await response.json();
         console.log(resJson);
+        console.log(toggleReload);
         setToggleReload(true);
+        console.log(toggleReload);
       } catch (e) {
         console.log(e);
       }
