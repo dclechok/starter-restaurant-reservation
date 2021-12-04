@@ -3,7 +3,7 @@ import formatReservationTime from "../utils/format-reservation-time";
 import "./Dashboard.css";
 import React, { useState, useEffect } from "react";
 import ErrorAlert from "../layout/ErrorAlert";
-
+//test
 function Dashboard({ date, useDate, setUseDate, errors, setErrors }) {
   const RESERVATIONS_URL = "http://localhost:5000/reservations";
   const TABLES_URL = "http://localhost:5000/tables";
