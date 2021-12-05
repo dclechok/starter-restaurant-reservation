@@ -1,0 +1,24 @@
+.form-width{
+    border-style: solid;
+    border-color: black;
+    border-width: 2px;
+    width: 25%;
+    margin: 20px 20px;
+    min-width: 330px;
+}
+
+.center-buttons{
+    text-align: center;
+}
+
+.center-input{
+    text-align: center;
+}
+
+input{
+    min-width: 82%;
+}
+
+legend{
+    text-align: center;
+}

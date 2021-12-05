@@ -34,7 +34,7 @@ function ReservationSeatForm({ setUseDate }) {
         });
         const resJson = await response.json();
         if (resJson.data) { //if request response is valid, push us back to dashboard
-          setUseDate(resJson.data.reservation_date.slice(0, 9)); //format date from date object
+          setUseDate(resJson.data.reservation_date.slice(0, 10)); //format date from date object
           history.push({
             pathname: "/dashboard",
           });

@@ -1,8 +1,8 @@
-import formatReservationDate from "../utils/format-reservation-date";
-import formatReservationTime from "../utils/format-reservation-time";
+
 import "./Dashboard.css";
 import React, { useState, useEffect } from "react";
 import ErrorAlert from "../layout/ErrorAlert";
+import Reservations from "./Reservations";
 
 function Dashboard({ date, useDate, setUseDate, errors, setErrors }) {
   const RESERVATIONS_URL = "http://localhost:5000/reservations";
@@ -10,8 +10,12 @@ function Dashboard({ date, useDate, setUseDate, errors, setErrors }) {
   const [reservations, setReservations] = useState([]);
   const [toggleButton, setToggleButton] = useState("none"); //toggle buttons
   const [toggleReload, setToggleReload] = useState(false); //toggle tables reload
+  // const [reloadReservation, setReloadReservation] = (false); //reload reservations
   const [tables, setTables] = useState([]);
-  // const [status, setStatus] = useState([]);
+  // const [reservationStatus, setReservationStatus] = useState({
+  //   status: "",
+  //   reservation_id: 0,
+  // });
 
   useEffect(() => {
     //fetch reservations based on useDate
@@ -22,7 +26,6 @@ function Dashboard({ date, useDate, setUseDate, errors, setErrors }) {
           method: "GET",
         });
         const newRes = await response.json();
-        console.log(newRes);
         setReservations(newRes.data || []);
       } catch (e) {
         setErrors(e);
@@ -33,9 +36,10 @@ function Dashboard({ date, useDate, setUseDate, errors, setErrors }) {
     return () => {
       abortController.abort();
     }; //cleanup, cancels any incoming api calls
-  }, [useDate]);
+  }, [useDate, toggleReload]);
 
-  useEffect(() => { //load tables
+  useEffect(() => {
+    //load tables
     const abortController = new AbortController();
     async function getTablesList() {
       try {
@@ -52,15 +56,47 @@ function Dashboard({ date, useDate, setUseDate, errors, setErrors }) {
     }; //cleanup, cancels any incoming api calls
   }, [toggleReload]);
 
+  // useEffect(() => {
+  //   //update the status of the reservations
+  //   console.log(reservationStatus);
+  //   const abortController = new AbortController();
+  //   async function updateStat() {
+  //     try {
+  //       console.log(reservationStatus)
+  //       await fetch(
+  //         RESERVATIONS_URL + `/${reservationStatus.reservation_id}` + `/status`,
+  //         {
+  //           method: "PUT",
+  //           body: JSON.stringify({ data: { status: reservationStatus } }),
+  //           headers: { "Content-Type": "application/json" },
+  //         }
+  //       );
+  //     } catch (e) {
+  //       console.log(e);
+  //     }
+  //   }
+  //   updateStat();
+  //   return () => {
+  //     abortController.abort();
+  //   }; //cleanup, cancels any incoming api calls
+  // }, [reservationStatus]);
+
   function handleFinish(e) {
     setToggleReload(false);
+    const abortController = new AbortController();
     const table_id = e.currentTarget.id;
     async function deleteSeat() {
       try {
-        await fetch(TABLES_URL + `/${table_id}` + "/seat", {
+        const response = await fetch(TABLES_URL + `/${table_id}` + "/seat", {
           method: "DELETE",
         });
-        setToggleReload(true);
+        const resJson = await response.json();
+
+        // setReservationStatus({
+        //   status: "finished",
+        //   reservation_id: resJson.data.reservation_id,
+        // });
+        setToggleReload(true); //reloads the tables in dashboard
       } catch (e) {
         console.log(e);
       }
@@ -71,6 +107,8 @@ function Dashboard({ date, useDate, setUseDate, errors, setErrors }) {
       )
     )
       deleteSeat();
+    // setToggleReload(true);
+    return () => abortController.abort();
   }
 
   function tableItemBuilder(table) {
@@ -105,53 +143,6 @@ function Dashboard({ date, useDate, setUseDate, errors, setErrors }) {
               Finish
             </button>
           </React.Fragment>
-        )}
-      </div>
-    );
-  }
-
-  function reservationListItemBuilder(reservation) {
-    let {
-      reservation_id,
-      first_name,
-      last_name,
-      mobile_number,
-      reservation_time,
-      reservation_date,
-      people,
-      status,
-    } = reservation;
-    if (!status) status = "booked";
-
-    formatReservationDate(reservation);
-    formatReservationTime(reservation);
-
-    return (
-      <div className="render-res">
-        <span>Reservation ID: {reservation_id}</span>
-        <br />
-        <span>First Name: {first_name}</span>
-        <br />
-        <span>Last Name: {last_name}</span>
-        <br />
-        <span>Date of Reservation: {reservation_date}</span>
-        <br />
-        <span>Time of Reservation: {reservation_time}</span>
-        <br />
-        <span>Mobile Number: {mobile_number}</span>
-        <br />
-        <span>Amount of People: {people}</span>
-        <br />
-        <span data-reservation-id-status={reservation.reservation_id}>
-          Status: {status}
-        </span>
-        <br />
-        {status == 'booked' && (
-          <a href={`/reservations/${reservation_id}/seat`}>
-            <button className="seat-button" type="button">
-              Seat
-            </button>
-          </a>
         )}
       </div>
     );
@@ -204,7 +195,8 @@ function Dashboard({ date, useDate, setUseDate, errors, setErrors }) {
           <ul className="reservation-list">
             {reservations.map((reservation, index) => (
               <li className="li-container" key={index}>
-                {reservationListItemBuilder(reservation)}
+                <Reservations reservation={reservation} />
+                {/* {reservationListItemBuilder(reservation)} */}
               </li>
             ))}
           </ul>
