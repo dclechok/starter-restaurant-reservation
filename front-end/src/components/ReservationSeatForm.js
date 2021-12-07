@@ -27,7 +27,7 @@ function ReservationSeatForm({ setUseDate }) {
     const table_id = e.target.table_id.value; //selected value from form
     async function saveTableAssignment() {
       try {
-        const response = await fetch(TABLES_URL + `/${table_id}` + "/seat", {
+        const response = await fetch(TABLES_URL + `/${table_id}/seat`, {
           method: "PUT",
           body: JSON.stringify({ data: { reservation_id: reservation_id } }),
           headers: { "Content-Type": "application/json" },

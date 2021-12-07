@@ -28,8 +28,8 @@ function Search() {
   function handleChange(e) {
     setPhoneNumber(e.target.value);
   }
-
-  if (reservations){
+  
+  if (reservations) {
     return (
       <div>
         <form className="form-width" onSubmit={handleSubmit}>
@@ -51,20 +51,20 @@ function Search() {
             </div>
           </fieldset>
         </form>
-        <div>
+
           <ul className="reservation-list">
-            {reservations &&
+            {reservations.length !== 0 ? (
               reservations.map((reservation, index) => (
                 <li className="li-container" key={index}>
                   <Reservations reservation={reservation} />
-                  {/* {reservationListItemBuilder(reservation)} */}
                 </li>
-              ))}
+            ))) : (<p>No reservations found</p>)  
+            }
           </ul>
-        </div>
+
       </div>
-    );}
-  else return (<p>No reservations found</p>);
+    )
+  } else return <p>No reservations found</p>;
 }
 
 export default Search;

@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 
 import { Redirect, Route, Switch } from "react-router-dom";
-// import Dashboard from "../dashboard/Dashboard";
 import Dashboard from "../components/Dashboard";
 import NotFound from "./NotFound";
 import { today } from "../utils/date-time";
@@ -24,6 +23,7 @@ function Routes() {
   const dateQuery = query.get("date");
   const [useDate, setUseDate] = useState(dateQuery ? dateQuery : today); //raised state to pass between reservations/dashboard
   const [errors, setErrors] = useState("");
+  const [toggleReload, setToggleReload] = useState(false); //toggle tables reload
 
   return (
     <Switch>
@@ -45,6 +45,9 @@ function Routes() {
       <Route exact path="/tables/new">
         <TablesForm />
       </Route>
+      <Route exact path="/reservations/:reservation_id/edit">
+        <ReservationForm />
+      </Route>
       <Route path="/dashboard">
         <Dashboard
           date={today()}
@@ -52,6 +55,8 @@ function Routes() {
           setUseDate={setUseDate}
           errors={errors}
           setErrors={setErrors}
+          setToggleReload={setToggleReload}
+          toggleReload={toggleReload}
         />
       </Route>
       <Route>

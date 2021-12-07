@@ -53,10 +53,12 @@ async function tableOccupied(req, res, next){
   const { reservation_id } = await knex.from('tables').where('table_id', table_id).then(table => table[0]); //fetch specific table's capacity
   const query = await knex('reservations').where('reservation_id', reservation_id).select('status').then(res => res[0]);
   res.locals.theResId = reservation_id;
-  if(query && query.status == 'seated') return next();
-  else return next({ status: 400, message: "Table is not occupied."});
+  // if(query && query.status == 'occupied') return next();
+  // else return next({ status: 400, message: "Table is not occupied."});
+  next();
 }
 
+//1330 13:30 01:20
 async function checkAlreadySeated(req, res, next){
   const { reservation_id } = req.body.data;
   const data = await knex('reservations')
@@ -112,7 +114,7 @@ async function deleteTable(req, res, next){
   await knex('tables')
     .where('table_id', req.params.table_id)
     .update('reservation_id', null);
-  console.log(data);
+
   res.status(200).json({ data });
 }
 
