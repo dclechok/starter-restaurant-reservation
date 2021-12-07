@@ -66,12 +66,12 @@ function Dashboard({
       let response = await fetch(TABLES_URL + `/${table_id}/seat`, {
         method: "DELETE",
       });
-      const resJson = await response.json();
+      await response.json();
       const status = response.status;
 
-      response = await fetch(TABLES_URL, { method: "GET" });
+      response = await fetch(TABLES_URL, { method: "GET" }); //fetch the new tables list
       const newTablesList = await response.json();
-      console.log(response, "heyep");
+
       setTables(newTablesList.data || []);
       setToggleReload(newTablesList.data[1].reservation_id + '-' + table_id + '-' + status); //reloads the tables in dashboard
     }
@@ -95,8 +95,6 @@ function Dashboard({
 
     return (
       <div className="render-res">
-        {toggleReload ? "true" : "false"}
-        {toggleReload}
         <span>Table ID: {table_id}</span>
         <br />
         <span>Table Name: {table_name}</span>

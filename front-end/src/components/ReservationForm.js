@@ -24,8 +24,8 @@ function ReservationForm({ setUseDate, setErrors }) {
 
   const [reservationData, setReservationData] = useState(
     defaultReservationData
-  );
-  console.log(reservationData.reservation_time);
+  );  
+  
   function handleClick() {
     history.goBack();
   } //cancel form takes us back a page
@@ -81,15 +81,16 @@ function ReservationForm({ setUseDate, setErrors }) {
           method: "GET",
         });
         const resJson = await response.json();
-        if (resJson) setPlaceholder({ ...resJson.data });
-      } catch (e) {
+        if (resJson.data){
+          setPlaceholder({ ...resJson.data });
+        }
+        } catch (e) {
         console.log(e);
       }
     }
     if (currentUrl === `/reservations/${reservation_id}/edit`) {
       loadRes();
       setIsEditPage(true); // the page is an edit page, not create page
-      setReservationData(placeholder);
     }
   }, []);
 
@@ -99,9 +100,9 @@ function ReservationForm({ setUseDate, setErrors }) {
       [target.name]: target.value,
     });
     if(reservation_id){
-      console.log(target.name, target.value);
+      console.log(placeholder);
       setPlaceholder({
-        ...reservationData,
+        ...placeholder,
         [target.name]: target.value,
       })
     }
@@ -111,36 +112,21 @@ function ReservationForm({ setUseDate, setErrors }) {
     //edit submit if edit page
     e.preventDefault();
     const abortController = new AbortController();
+    console.log(placeholder);
+    placeholder.people = Number(placeholder.people); //people must not be a string
 
-    reservationData.people = Number(reservationData.people); //people must not be a string
-
-    let formattedDate = reservationData.reservation_date; //format date from 01012035 to 2035-01-01 which our backend accepts
-    formattedDate =
-      formattedDate.substring(4, 8) +
-      "-" +
-      formattedDate.substring(2, 4) +
-      "-" +
-      formattedDate.substring(0, 2);
-    reservationData.reservation_date = formattedDate;
-
-    //format time -- throw a ':' in there so the backend can process
-    let time = reservationData.reservation_time; // 1330
-    const formattedTime = time.split("");
-    formattedTime.splice(2, 0, ":");
-    reservationData.reservation_time = formattedTime.join("");
-
-
-    async function updateReservation() {
-      
+    async function updateReservation() {      
       try {
         const response = await fetch(RESERVATIONS_URL + `/${reservation_id}`, {
           method: "PUT",
-          body: JSON.stringify({ data: reservationData }),
+          body: JSON.stringify({ data: placeholder }),
           headers: { "Content-Type": "application/json" },
         });
         const resJson = await response.json();
-        setReservationData(defaultReservationData);
-        if(resJson.data) history.goBack(); //if request data is successful, go back to previous page
+  
+        if(resJson.data) { 
+          setPlaceholder(defaultReservationData);
+          history.goBack(); } //if request data is successful, go back to previous page
       } catch (e) {
         console.log(e);
       }
@@ -149,7 +135,7 @@ function ReservationForm({ setUseDate, setErrors }) {
     return () => abortController.abort();
   };
 
-  return (
+  if(placeholder) return (
     <div className="form-width">
       <form onSubmit={isEditPage ? handleEditSubmit : handleCreateSubmit}>
         <fieldset>
@@ -203,12 +189,13 @@ function ReservationForm({ setUseDate, setErrors }) {
             Reservation Date:
             <input
               name="reservation_date"
-              value={placeholder.reservation_date}
+              value={placeholder.reservation_date ? formatReservationDate(placeholder).reservation_date : placeholder.reservation_date}
               id="reservation_date"
               onChange={handleChange}
+              pattern="\d{4}-\d{2}-\d{2}"
               placeholder={
                 placeholder.reservation_date
-                  ? `${formatReservationDate(placeholder).reservation_date}`
+                  ? `${placeholder.reservation_date}`
                   : "Reservation Date"
               }
             />
@@ -217,12 +204,13 @@ function ReservationForm({ setUseDate, setErrors }) {
             Reservation Time:
             <input
               name="reservation_time"
-              value={placeholder.reservation_time}
+              value={placeholder.reservation_time ? formatReservationTime(placeholder).reservation_time : placeholder.reservation_time}
               id="reservation_time"
               onChange={handleChange}
+              pattern="[0-9]{2}:[0-9]{2}"
               placeholder={
                 placeholder.reservation_time
-                  ? `${formatReservationTime(placeholder).reservation_time}`
+                  ? `${placeholder.reservation_time}`
                   : "Reservation Time"
               }
             />

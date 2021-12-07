@@ -5,8 +5,8 @@ const asyncErrorBoundary = require('../errors/asyncErrorBoundary');
 const knex = require('../db/connection');
 // const reservationService = require('./reservations.service');
 
-const DATE_FORMAT = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/; //valid regex formatting for date
-const TIME_FORMAT = /^(0?[1-9]|1[0-9]|2[0-3]):[0-5][0-9]$/;  //valid regex formatting for time
+const DATE_FORMAT = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/; //valid regex formatting for date '2021-10-10'
+const TIME_FORMAT = /^(0?[1-9]|1[0-9]|2[0-3]):[0-5][0-9]$/;  //valid regex formatting for time '10:20'
 
 // START VALIDATION MIDDLEWARE
 function bodyHasResultProperty(req, res, next) {
@@ -47,7 +47,7 @@ function validateDate(req, res, next){
   //compare incoming reservation date to the current date
   const incomingDate = new Date(reservation_date);
   const currentDate = new Date(buildDate);
-  if(incomingDate < currentDate) return next({
+  if((incomingDate.getTime() - currentDate.getTime()) < 0) return next({
       status: 400, message: 'Reservations cannot be placed from the future.',
     });
   res.locals.resDate = incomingDate; //store reservation date to be used in next validation
@@ -70,7 +70,7 @@ function validateTime(req, res, next){
   const TOO_EARLY = 1030, TOO_LATE = 2230;
   let attemptedResTime = time.split('').slice(0, 2).join(''); //removing colon :
   attemptedResTime += time.split('').slice(3, 5).join('');
-  if(Number(attemptedResTime) < TOO_EARLY || Number(attemptedResTime) > TOO_LATE) return next({ status: 400, message: 'Reservation from future not allowed.' });
+  if((Number(attemptedResTime) + 1200) < TOO_EARLY || (Number(attemptedResTime) + 1200) > TOO_LATE) return next({ status: 400, message: 'Reservation from future not allowed.' });
   next();
 }
 
@@ -176,6 +176,9 @@ module.exports = {
   update: [
     asyncErrorBoundary(reservationExists), 
     validateReservation,
+    validateDate,
+    validateNoTuesdayReservation,
+    validateTime,
     asyncErrorBoundary(update)
   ],
   updateStatus: [
