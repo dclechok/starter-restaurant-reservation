@@ -11,7 +11,6 @@ function ReservationForm({ setUseDate, setErrors }) {
   const history = useHistory(); //get history of page
   const { reservation_id } = useParams();
   const [isEditPage, setIsEditPage] = useState(false);
-  const [toggleSubmit, setToggleSubmit] = useState(false);
 
   const defaultReservationData = {
     first_name: "",
@@ -35,17 +34,15 @@ function ReservationForm({ setUseDate, setErrors }) {
     }
   }, []);
 
-  console.log(isEditPage);
-
   function handleSubmit(e) {
     //validate fields and make call to API
-    setErrors(""); //reset errors
+
     e.preventDefault(); //stop from reloading on submit
     const abortController = new AbortController();
+    console.log('here?');
     placeholder.people = Number(placeholder.people); //people must not be a string
-    console.log('here?1', isEditPage);
+
     async function saveReservation() {
-      console.log("update with post");
       try {
         const response = await fetch(RESERVATIONS_URL, {
           method: "POST",
@@ -56,7 +53,7 @@ function ReservationForm({ setUseDate, setErrors }) {
         if (responseInfo.error) setErrors(responseInfo.error);
 
         setPlaceholder(defaultReservationData);
-        //move to Dashboard with reservation
+        // move to Dashboard with reservation
         history.push({
           pathname: "/reservations",
           search: `?date=${placeholder.reservation_date}`,
@@ -67,7 +64,6 @@ function ReservationForm({ setUseDate, setErrors }) {
     }
 
     async function updateReservation() {
-      console.log("update with put");
       try {
         const response = await fetch(RESERVATIONS_URL + `/${reservation_id}`, {
           method: "PUT",
@@ -75,16 +71,17 @@ function ReservationForm({ setUseDate, setErrors }) {
           headers: { "Content-Type": "application/json" },
         });
         const resJson = await response.json();
-        console.log('hello');
         if (resJson.data) {
+          setPlaceholder({});
           history.goBack();
         } //if request data is successful, go back to previous page
       } catch (e) {
         console.log(e);
       }
     }
-    console.log(isEditPage);
-    isEditPage ? updateReservation() : saveReservation();// : saveReservation(); // if we're on edit page, then just update existing reservation if not save new reservation
+
+    isEditPage ? updateReservation() : saveReservation();// if we're on edit page, then just update existing reservation if not save new reservation
+    setPlaceholder(defaultReservationData);
     return () => abortController.abort();
   }
 
@@ -109,10 +106,9 @@ function ReservationForm({ setUseDate, setErrors }) {
     }
     if (currentUrl === `/reservations/${reservation_id}/edit`) {
       loadRes();
-      setPlaceholder({});
     }
     return () => abortController.abort();
-  }, [isEditPage]);
+  }, []);
 
   const handleChange = ({ target }) => {
     setPlaceholder({
@@ -134,8 +130,7 @@ function ReservationForm({ setUseDate, setErrors }) {
             <input
               type="text"
               name="first_name"
-              value={
-                currentUrl === "/reservations/new" ? "" : placeholder.first_name
+              value={placeholder.first_name
               }
               id="first_name"
               onChange={handleChange}
@@ -147,9 +142,7 @@ function ReservationForm({ setUseDate, setErrors }) {
             <input
               type="text"
               name="last_name"
-              value={
-                currentUrl === "/reservations/new" ? "" : placeholder.last_name
-              }
+              value={placeholder.last_name}
               id="last_name"
               onChange={handleChange}
               placeholder={"Last Name"}
@@ -159,11 +152,7 @@ function ReservationForm({ setUseDate, setErrors }) {
             Mobile Number:
             <input
               name="mobile_number"
-              value={
-                currentUrl === "/reservations/new"
-                  ? ""
-                  : placeholder.mobile_number
-              }
+              value={placeholder.mobile_number}
               id="mobile_number"
               onChange={handleChange}
               placeholder={"Mobile Number"}
@@ -173,11 +162,7 @@ function ReservationForm({ setUseDate, setErrors }) {
             Reservation Date:
             <input
               name="reservation_date"
-              value={
-                currentUrl === "/reservations/new"
-                  ? ""
-                  : placeholder.reservation_date
-              }
+              value={placeholder.reservation_date}
               id="reservation_date"
               onChange={handleChange}
               pattern="\d{4}-\d{2}-\d{2}"
@@ -188,11 +173,7 @@ function ReservationForm({ setUseDate, setErrors }) {
             Reservation Time:
             <input
               name="reservation_time"
-              value={
-                currentUrl === "/reservations/new"
-                  ? ""
-                  : placeholder.reservation_time
-              }
+              value={placeholder.reservation_time}
               id="reservation_time"
               onChange={handleChange}
               pattern="[0-9]{2}:[0-9]{2}"
