@@ -70,7 +70,8 @@ function validateTime(req, res, next){
   const TOO_EARLY = 1030, TOO_LATE = 2230;
   let attemptedResTime = time.split('').slice(0, 2).join(''); //removing colon :
   attemptedResTime += time.split('').slice(3, 5).join('');
-  if((Number(attemptedResTime) + 1200) < TOO_EARLY || (Number(attemptedResTime) + 1200) > TOO_LATE) return next({ status: 400, message: 'Reservation from future not allowed.' });
+  if(Number(attemptedResTime) < 1200) Number(attemptedResTime) += 1200;
+  if((Number(attemptedResTime)) < TOO_EARLY || (Number(attemptedResTime)) > TOO_LATE) return next({ status: 400, message: 'Reservation from future not allowed.' });
   next();
 }
 
@@ -176,9 +177,6 @@ module.exports = {
   update: [
     asyncErrorBoundary(reservationExists), 
     validateReservation,
-    validateDate,
-    validateNoTuesdayReservation,
-    validateTime,
     asyncErrorBoundary(update)
   ],
   updateStatus: [

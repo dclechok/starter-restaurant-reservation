@@ -16,7 +16,6 @@ function Dashboard({
   const TABLES_URL = "http://localhost:5000/tables";
   const [reservations, setReservations] = useState([]);
   const [toggleButton, setToggleButton] = useState("none"); //toggle buttons
-  // const [toggleReload, setToggleReload] = useState(false); //toggle tables reload
   const [tables, setTables] = useState([]);
 
   useEffect(() => {
