@@ -2,6 +2,7 @@ import "./Dashboard.css";
 import React, { useState, useEffect } from "react";
 import ErrorAlert from "../layout/ErrorAlert";
 import Reservations from "./Reservations";
+import useQuery from "../utils/useQuery";
 
 function Dashboard({
   date,
@@ -17,6 +18,8 @@ function Dashboard({
   const [reservations, setReservations] = useState([]);
   const [toggleButton, setToggleButton] = useState("none"); //toggle buttons
   const [tables, setTables] = useState([]);
+  const query = useQuery();
+  const dateQuery = query.get("date");
 
   useEffect(() => {
     //fetch reservations based on useDate
@@ -120,6 +123,10 @@ function Dashboard({
       </div>
     );
   }
+
+  useEffect(() => {
+    if(dateQuery) setUseDate(dateQuery);
+  }, [dateQuery]);
 
   useEffect(() => {
     const abortController = new AbortController();

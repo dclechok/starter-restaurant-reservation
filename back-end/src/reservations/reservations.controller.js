@@ -41,12 +41,15 @@ function validateReservation(req, res, next){
 
 function validateDate(req, res, next){
   const { reservation_date } = req.body.data;
+  console.log(req.body.data, 'yee');
   //construct todays date as a string
   const dateToday = new Date();
   let buildDate = dateToday.getFullYear() + '-' + (dateToday.getMonth() + 1) + '-' + dateToday.getDate();
   //compare incoming reservation date to the current date
-  const incomingDate = new Date(reservation_date);
+  const incomingDate = new Date(reservation_date); //20210101     2021-01-01
   const currentDate = new Date(buildDate);
+  console.log(incomingDate.getTime() - currentDate.getTime());
+
   if((incomingDate.getTime() - currentDate.getTime()) < 0) return next({
       status: 400, message: 'Reservations cannot be placed from the future.',
     });
@@ -68,10 +71,13 @@ function validateTime(req, res, next){
   // only future reservations are allowed (after current time on day even current day)
   const { reservation_time: time } = req.body.data;
   const TOO_EARLY = 1030, TOO_LATE = 2230;
-  let attemptedResTime = time.split('').slice(0, 2).join(''); //removing colon :
-  attemptedResTime += time.split('').slice(3, 5).join('');
-  if(Number(attemptedResTime) < 1200) Number(attemptedResTime) += 1200;
-  if((Number(attemptedResTime)) < TOO_EARLY || (Number(attemptedResTime)) > TOO_LATE) return next({ status: 400, message: 'Reservation from future not allowed.' });
+  let attemptedResTime = Number(time.split('').slice(0, 2).join('')); //removing colon :
+  attemptedResTime += Number(time.split('').slice(3, 5).join(''));
+
+  console.log(attemptedResTime, 'testss');
+
+  if(attemptedResTime < 1200) attemptedResTime += 1200;
+  if(attemptedResTime < TOO_EARLY || attemptedResTime > TOO_LATE) return next({ status: 400, message: 'Reservation from future not allowed.' });
   next();
 }
 
@@ -125,6 +131,7 @@ async function list(req, res) {
 
 async function create(req, res){
   const result = req.body.data;
+  console.log(result, 'results?');
   const data = await knex('reservations').insert(result).returning('*').then(results => results[0]); //insert body data into reservations
   res.status(201).json({ data });
 }

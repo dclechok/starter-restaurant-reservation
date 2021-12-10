@@ -36,14 +36,14 @@ function ReservationForm({ setUseDate, setErrors }) {
 
   function handleSubmit(e) {
     //validate fields and make call to API
-
     e.preventDefault(); //stop from reloading on submit
     const abortController = new AbortController();
-    console.log('here?');
     placeholder.people = Number(placeholder.people); //people must not be a string
 
     async function saveReservation() {
       try {
+        placeholder.reservation_date = placeholder.reservation_date.substr(4, 4) + '-' + placeholder.reservation_date.substr(2, 2) + '-' + placeholder.reservation_date.substr(0, 2);
+        placeholder.reservation_time = placeholder.reservation_time.substr(0, 2) + ':' + placeholder.reservation_time.substr(2, 2);//1330
         const response = await fetch(RESERVATIONS_URL, {
           method: "POST",
           body: JSON.stringify({ data: placeholder }),
@@ -55,7 +55,7 @@ function ReservationForm({ setUseDate, setErrors }) {
         setPlaceholder(defaultReservationData);
         // move to Dashboard with reservation
         history.push({
-          pathname: "/reservations",
+          pathname: "/dashboard",
           search: `?date=${placeholder.reservation_date}`,
         });
       } catch (e) {
@@ -73,7 +73,10 @@ function ReservationForm({ setUseDate, setErrors }) {
         const resJson = await response.json();
         if (resJson.data) {
           setPlaceholder({});
-          history.goBack();
+          history.push({
+            pathname: "/dashboard",
+            search: `?date=${placeholder.reservation_date}`,
+          });
         } //if request data is successful, go back to previous page
       } catch (e) {
         console.log(e);
@@ -165,7 +168,7 @@ function ReservationForm({ setUseDate, setErrors }) {
               value={placeholder.reservation_date}
               id="reservation_date"
               onChange={handleChange}
-              pattern="\d{4}-\d{2}-\d{2}"
+              // pattern="\d{4}-\d{2}-\d{2}"
               placeholder={"Reservation Date"}
             />
           </label>
@@ -176,7 +179,7 @@ function ReservationForm({ setUseDate, setErrors }) {
               value={placeholder.reservation_time}
               id="reservation_time"
               onChange={handleChange}
-              pattern="[0-9]{2}:[0-9]{2}"
+              // pattern="[0-9]{2}:[0-9]{2}"
               placeholder={"Reservation Time"}
             />
           </label>
