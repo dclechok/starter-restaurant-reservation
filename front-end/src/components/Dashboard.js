@@ -89,7 +89,7 @@ function Dashboard({
 
   function tableItemBuilder(table) {
     let { table_id, table_name, capacity, reservation_id } = table;
-    let status = "Occupied";
+    let status = "occupied";
     if (!reservation_id) {
       reservation_id = "N/A";
       status = "free";
@@ -106,7 +106,7 @@ function Dashboard({
         <span>Capacity: {capacity}</span>
         <br />
         <span data-table-id-status={table.table_id}>Status: {status}</span>
-        {status === "Occupied" && (
+        {status === "occupied" && (
           <React.Fragment>
             <br />
             <button
