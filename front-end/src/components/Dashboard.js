@@ -49,7 +49,7 @@ function Dashboard({
       try {
         const response = await fetch(TABLES_URL, { method: "GET" });
         const newTablesList = await response.json();
-        setTables(newTablesList.data || []);
+        setTables(newTablesList.data);
       } catch (e) {
         setErrors(e);
       }
