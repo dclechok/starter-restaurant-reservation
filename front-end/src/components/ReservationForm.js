@@ -4,9 +4,10 @@ import { useHistory, useParams } from "react-router";
 import { useLocation } from "react-router-dom";
 import formatReservationDate from "../utils/format-reservation-date";
 import formatReservationTime from "../utils/format-reservation-time";
+import { API_BASE_URL } from "../utils/api";
 
 function ReservationForm({ setUseDate, setErrors }) {
-  const RESERVATIONS_URL = "http://localhost:5000/reservations";
+  const RESERVATIONS_URL = API_BASE_URL + "/reservations";
   const { pathname: currentUrl } = useLocation();
   const history = useHistory(); //get history of page
   const { reservation_id } = useParams();

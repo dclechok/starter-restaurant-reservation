@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import ErrorAlert from "../layout/ErrorAlert";
 import Reservations from "./Reservations";
 import useQuery from "../utils/useQuery";
+import { API_BASE_URL } from "../utils/api";
 
 function Dashboard({
   date,
@@ -13,8 +14,8 @@ function Dashboard({
   setToggleReload,
   toggleReload,
 }) {
-  const RESERVATIONS_URL = "http://localhost:5000/reservations";
-  const TABLES_URL = "http://localhost:5000/tables";
+  const RESERVATIONS_URL = API_BASE_URL + "/reservations";
+  const TABLES_URL = API_BASE_URL + "/tables";
   const [reservations, setReservations] = useState([]);
   const [toggleButton, setToggleButton] = useState("none"); //toggle buttons
   const [tables, setTables] = useState([]);

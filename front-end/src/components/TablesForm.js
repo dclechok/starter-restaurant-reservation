@@ -1,8 +1,9 @@
 import { useHistory } from "react-router";
 import { useEffect, useState } from "react";
+import { API_BASE_URL } from "../utils/api";
 
 function TablesForm() {
-  const TABLES_URL = "http://localhost:5000/tables";
+  const TABLES_URL = API_BASE_URL + "/tables";
   const history = useHistory();
   const defaultTableData = {
     table_name: "",

@@ -1,9 +1,10 @@
 import "./ReservationSeatForm.css";
 import { useEffect, useState } from "react";
 import { useHistory, useParams } from "react-router";
+import { API_BASE_URL } from "../utils/api";
 
 function ReservationSeatForm({ setUseDate }) {
-  const TABLES_URL = "http://localhost:5000/tables";
+  const TABLES_URL = API_BASE_URL + "/tables";
   const history = useHistory();
   const [tables, setTables] = useState();
   const { reservation_id } = useParams();

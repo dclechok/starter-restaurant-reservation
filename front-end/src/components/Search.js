@@ -1,9 +1,10 @@
 import { useState } from "react";
 import "./Search.css";
 import Reservations from "./Reservations";
+import { API_BASE_URL } from "../utils/api";
 
 function Search() {
-  const RESERVATIONS_URL = "http://localhost:5000/reservations/?mobile_number=";
+  const RESERVATIONS_URL = API_BASE_URL + "/reservations/?mobile_number=";
   const [phoneNumber, setPhoneNumber] = useState("");
   const [reservations, setReservations] = useState([]);
 

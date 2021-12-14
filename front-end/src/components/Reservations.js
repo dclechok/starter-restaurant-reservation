@@ -1,9 +1,10 @@
 import formatReservationDate from "../utils/format-reservation-date";
 import formatReservationTime from "../utils/format-reservation-time";
 import "./Reservations.css";
+import { API_BASE_URL } from "../utils/api";
 
 function Reservations({ reservation, setToggleReload, toggleReload }) {
-  const RESERVATIONS_URL = "http://localhost:5000/reservations";
+  const RESERVATIONS_URL = API_BASE_URL + "/reservations";
 
   let {
     reservation_id,
