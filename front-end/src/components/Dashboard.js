@@ -30,7 +30,7 @@ function Dashboard({
           method: "GET",
         });
         const newRes = await response.json();
-        setReservations(newRes.data || []);
+        setReservations(newRes.data);
       } catch (e) {
         setErrors(e);
       }
