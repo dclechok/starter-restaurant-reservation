@@ -43,7 +43,7 @@ function ReservationForm({ setUseDate, setErrors }) {
     async function saveReservation() {
       try {
         placeholder.reservation_date = placeholder.reservation_date.substr(4, 4) + '-' + placeholder.reservation_date.substr(2, 2) + '-' + placeholder.reservation_date.substr(0, 2);
-        console.log(placeholder.reservation_time, 'weher');
+
         if(placeholder.reservation_time.includes('PM')) {
           placeholder.reservation_time = Number(placeholder.reservation_time.substr(0, 2) + placeholder.reservation_time.substr(2, 2)) + 1200;
           placeholder.reservation_time = String(placeholder.reservation_time);
