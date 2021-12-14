@@ -74,7 +74,7 @@ function Dashboard({
       response = await fetch(TABLES_URL, { method: "GET" }); //fetch the new tables list
       const newTablesList = await response.json();
 
-      setTables(newTablesList.data || []);
+      setTables(newTablesList.data);
       setToggleReload(
         newTablesList.data[1].reservation_id +
           "-" +
