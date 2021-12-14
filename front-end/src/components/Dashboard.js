@@ -30,7 +30,7 @@ function Dashboard({
           method: "GET",
         });
         const newRes = await response.json();
-        setReservations(newRes.data);
+        setReservations(newRes.data || []);
       } catch (e) {
         setErrors(e);
       }
@@ -49,7 +49,7 @@ function Dashboard({
       try {
         const response = await fetch(TABLES_URL, { method: "GET" });
         const newTablesList = await response.json();
-        setTables(newTablesList.data);
+        setTables(newTablesList.data || []);
       } catch (e) {
         setErrors(e);
       }
@@ -74,7 +74,7 @@ function Dashboard({
       response = await fetch(TABLES_URL, { method: "GET" }); //fetch the new tables list
       const newTablesList = await response.json();
 
-      setTables(newTablesList.data);
+      setTables(newTablesList.data || []);
       setToggleReload(
         newTablesList.data[1].reservation_id +
           "-" +
